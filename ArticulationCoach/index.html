@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Articulation Coach</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f1a2e'/%3E%3Cpath d='M22 18h20v22a10 10 0 0 1-20 0z' fill='%23d4a94a'/%3E%3Cpath d='M16 34a16 16 0 0 0 32 0M32 50v6' stroke='%23d4a94a' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0b1322; --panel:#121d33; --panel2:#18253f; --line:#24365a;
+  --text:#e8edf6; --muted:#93a3bf; --gold:#d4a94a; --gold2:#f0c96a;
+  --good:#3ecf8e; --warn:#f2b84b; --bad:#ef6461; --blue:#5aa7ff; --violet:#a78bfa;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif}
+button{font:inherit;cursor:pointer}
+a{color:var(--gold2)}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav{background:#08101d;border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:10px;align-items:center;margin:0 6px 26px}
+.brand .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#8c6a22);display:grid;place-items:center;font-weight:800;color:#0b1322}
+.brand b{display:block;font-size:15px}.brand small{color:var(--muted);font-size:12px}
+nav button{display:flex;width:100%;gap:10px;align-items:center;background:none;border:0;color:var(--muted);padding:10px 12px;border-radius:10px;text-align:left;margin-bottom:4px}
+nav button:hover{background:var(--panel);color:var(--text)}
+nav button.active{background:var(--panel2);color:var(--gold2)}
+nav .ico{width:20px;text-align:center}
+main{padding:28px 34px 60px;max-width:1180px;width:100%}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:0 0 12px}h3{font-size:15px;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 22px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.homeg{grid-template-columns:1.4fr 1fr}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.card.hi{border-color:#6b5420;background:linear-gradient(160deg,#1c2640,#141f36)}
+.stat{font-size:28px;font-weight:700}.stat small{font-size:13px;color:var(--muted);font-weight:500}
+.label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:10px}
+.btn:hover{border-color:var(--gold)}
+.btn.primary{background:linear-gradient(135deg,var(--gold),#b18630);color:#121212;border:0;font-weight:700}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{border-color:#6e2a2a;color:#ffb4b2}
+.btn.big{padding:14px 22px;font-size:16px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.space{justify-content:space-between}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.pill.gold{color:var(--gold2);border-color:#6b5420}
+.bar{height:8px;background:#0c1528;border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;transition:width .3s}
+.plan li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.plan li:last-child{border:0}
+.plan{list-style:none;margin:0;padding:0}
+.num{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);font-weight:700;font-size:13px}
+.num.done{background:var(--good);color:#06281a;border:0}
+.num.cur{background:var(--gold);color:#121212;border:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.banner{padding:12px 16px;border-radius:12px;margin-bottom:16px;border:1px solid}
+.banner.warn{background:#2a2112;border-color:#6b5420;color:#f6dca0}
+.banner.info{background:#13233f;border-color:#2c4c80;color:#cfe2ff}
+.banner.good{background:#0f2a20;border-color:#1f6b4b;color:#bdf3da}
+/* runner */
+.prompt{font-size:19px;line-height:1.6;background:#0d1729;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:12px 0}
+.prompt.read{font-family:Georgia,"Times New Roman",serif;font-size:20px}
+.frame{border-left:3px solid var(--gold);padding:6px 12px;color:#e7d6ad;background:#1a1f2b;border-radius:0 8px 8px 0;margin:10px 0;font-size:14px}
+.recbtn{width:76px;height:76px;border-radius:50%;border:0;background:radial-gradient(circle at 35% 35%,#ff8a80,#d33c3c);box-shadow:0 0 0 6px #3a1a1f;color:#fff;font-weight:800;font-size:12px}
+.recbtn.on{animation:pulse 1.2s infinite;background:radial-gradient(circle at 35% 35%,#ffffff,#d0d7e6);color:#b22;box-shadow:0 0 0 6px #4a2026}
+@keyframes pulse{50%{box-shadow:0 0 0 14px #4a202655}}
+.timer{font-size:30px;font-variant-numeric:tabular-nums;font-weight:700}
+.meter{height:10px;width:220px;background:#0c1528;border-radius:99px;overflow:hidden}
+.meter>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--good),var(--warn),var(--bad));transition:width .06s}
+.live{min-height:70px;background:#0d1729;border:1px dashed var(--line);border-radius:12px;padding:12px 14px;color:#cfd8ea;margin-top:12px}
+.live .interim{color:var(--muted)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:13px}
+.chip b{font-size:16px;margin-right:4px}
+.scorering{position:relative;width:120px;height:120px}
+.scorering svg{transform:rotate(-90deg)}
+.scorering .v{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-weight:800}
+.dims{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;flex:1}
+.dim{background:#0d1729;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.dim .n{font-size:22px;font-weight:700}
+.fb{list-style:none;padding:0;margin:0}
+.fb li{padding:10px 12px;border-radius:10px;margin-bottom:8px;background:#0d1729;border-left:4px solid var(--blue)}
+.fb li.good{border-color:var(--good)}.fb li.fix{border-color:var(--warn)}.fb li.bad{border-color:var(--bad)}
+.tx{line-height:2;font-size:15.5px}
+.tx .f{background:#4a1f22;color:#ffb3ae;text-decoration:line-through;border-radius:4px;padding:1px 3px}
+.tx .h{background:#4a3a14;color:#ffe2a0;border-radius:4px;padding:1px 3px;border-bottom:2px dotted var(--warn)}
+.tx .w{background:#3b2a12;color:#ffcf9a;border-radius:4px;padding:1px 3px}
+.tx .p{background:#123a2a;color:#9df0c8;border-radius:4px;padding:1px 3px}
+.tx .r{background:#2c1f44;color:#d8c8ff;border-radius:4px;padding:1px 3px}
+.tx .m{background:#4a1f22;color:#ffb3ae;border-radius:4px;padding:1px 3px}
+.tx .ok{color:#cfe9da}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:6px 0 10px}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.rewrite{background:#0f2a20;border:1px solid #1f6b4b;border-radius:12px;padding:14px 16px;color:#d6f7e6}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.up{color:var(--good)}.down{color:var(--bad)}
+input,select,textarea{background:#0d1729;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;width:100%}
+textarea{min-height:130px;resize:vertical}
+label.f{display:block;margin-bottom:14px}label.f span{display:block;color:var(--muted);font-size:13px;margin-bottom:5px}
+.drillcard{cursor:pointer;transition:border-color .15s,transform .15s}
+.drillcard:hover{border-color:var(--gold);transform:translateY(-2px)}
+.drillcard .e{font-size:26px}
+details summary{cursor:pointer;color:var(--gold2)}
+.hist{border-bottom:1px solid var(--line);padding:10px 0}
+.chart text{fill:var(--muted);font-size:11px}
+.phr td:first-child{color:#ffcf9a}.phr td:nth-child(2){color:#9df0c8}
+.hidden{display:none!important}
+.step-head{display:flex;gap:6px;margin-bottom:16px}
+.step-head div{flex:1;height:6px;border-radius:99px;background:var(--panel2)}
+.step-head div.done{background:var(--good)}.step-head div.cur{background:var(--gold)}
+.ai{background:#16163a;border:1px solid #3a3a80;border-radius:12px;padding:14px 16px}
+@media (max-width:900px){.app{grid-template-columns:1fr}nav{position:static;height:auto;display:flex;flex-wrap:wrap;gap:4px}nav .brand{width:100%}nav button{width:auto}.homeg{grid-template-columns:1fr}main{padding:18px 16px}.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.dims{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.g2,.g3,.g4,.homeg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav>
+    <div class="brand"><div class="logo">AC</div><div><b>Articulation Coach</b><small>Speak like a CEO</small></div></div>
+    <button data-tab="home" class="active"><span class="ico">🏠</span>Today</button>
+    <button data-tab="session"><span class="ico">🎙️</span>Daily Session</button>
+    <button data-tab="practice"><span class="ico">🎯</span>Free Practice</button>
+    <button data-tab="progress"><span class="ico">📈</span>Progress &amp; Reports</button>
+    <button data-tab="library"><span class="ico">📚</span>CEO Playbook</button>
+    <button data-tab="settings"><span class="ico">⚙️</span>Settings</button>
+  </nav>
+  <main>
+    <div id="support"></div>
+    <section id="tab-home"></section>
+    <section id="tab-session" class="hidden"></section>
+    <section id="tab-practice" class="hidden"></section>
+    <section id="tab-progress" class="hidden"></section>
+    <section id="tab-library" class="hidden"></section>
+    <section id="tab-settings" class="hidden"></section>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* ======================= CONTENT ======================= */
+const TWISTERS = [
+  {t:"Red leather, yellow leather.", lvl:1},
+  {t:"Unique New York, you know you need unique New York.", lvl:1},
+  {t:"She sells seashells by the seashore.", lvl:1},
+  {t:"A proper copper coffee pot.", lvl:1},
+  {t:"Truly rural, truly plural.", lvl:2},
+  {t:"Specific Pacific, specifically.", lvl:2},
+  {t:"Eleven benevolent elephants.", lvl:1},
+  {t:"Black background, brown background.", lvl:1},
+  {t:"Fresh French fried fish.", lvl:1},
+  {t:"Strategic statistics require specific specialists.", lvl:2},
+  {t:"Six thick thistle sticks.", lvl:2},
+  {t:"Which witch switched the Swiss wristwatches?", lvl:3},
+  {t:"Good blood, bad blood.", lvl:1},
+  {t:"Around the rugged rocks the ragged rascal ran.", lvl:2},
+  {t:"Executive excellence exceeds every expectation.", lvl:2},
+  {t:"Particularly prioritize the proposal's principal points.", lvl:3},
+  {t:"The sixth sick sheikh's sixth sheep's sick.", lvl:3},
+  {t:"Lesser leather never weathered wetter weather better.", lvl:3},
+  {t:"Many an anemone sees an enemy anemone.", lvl:3},
+  {t:"The thirty-three thieves thought that they thrilled the throne throughout Thursday.", lvl:3},
+  {t:"Betty bought a bit of better butter.", lvl:1},
+  {t:"Clear communication creates critical confidence.", lvl:2},
+  {t:"Profitable partnerships produce predictable performance.", lvl:2},
+  {t:"I scream, you scream, we all scream for ice cream.", lvl:1},
+];
+const PASSAGES = [
+  {title:"Quarterly update", t:"Good morning, everyone. This quarter we delivered record revenue and, more importantly, we earned the trust of our customers. We did not get everything right. Our delivery times slipped in the second month, and we have fixed the root cause. Here is what matters now: we will double down on quality, we will invest in our people, and we will keep our promises. I am proud of this team, and I am confident about the year ahead."},
+  {title:"The vision", t:"Five years from now, every small business in this country should be able to run its operations from a single screen. That is the future we are building. It will not be easy, and it will not happen by accident. It will happen because we stay focused on the customer, we make decisions quickly, and we hold ourselves to a standard higher than anyone else in this market."},
+  {title:"Crisis communication", t:"Yesterday our systems went down for four hours. That is unacceptable, and I take full responsibility. Here is what happened, here is what we have done, and here is what we will do next. We have restored every service, we have contacted every affected customer, and we are adding a second data center by the end of this month. You have my word that we will learn from this."},
+  {title:"All-hands motivation", t:"I want to start with a simple thank you. The last six months tested every one of us. We lost deals we expected to win, and we kept going anyway. That resilience is the reason I believe in this company. Our next chapter starts today. We have a clear plan, a strong product, and the best team I have ever worked with. Let's go and win."},
+  {title:"Investor pitch", t:"Every year, companies waste billions of dollars on inventory they cannot sell. We fix that. Our platform predicts demand with remarkable accuracy and tells managers exactly what to order and when. Our customers reduce waste by a third within ninety days. We are growing every month, our margins are healthy, and we are raising capital to expand into three new markets."},
+  {title:"Customer commitment", t:"Our customers do not buy software. They buy confidence. They want to know that when they press a button, the right thing happens every single time. That is our job. Every feature we ship, every call we answer, and every decision we make should strengthen that confidence. When we protect the customer's trust, the growth will follow."},
+  {title:"Leading through change", t:"Change is uncomfortable, and I will not pretend otherwise. We are reorganizing three teams so that we can move faster and serve customers better. Some of your roles will evolve. Every one of you will have a conversation with your manager this week. My promise is simple: you will hear the truth from me first, and you will have the support you need to succeed."},
+  {title:"Culture", t:"Culture is not the posters on the wall. Culture is what happens when nobody is watching. It is how we treat a difficult customer, how we disagree in a meeting, and how we celebrate a colleague's success. I want this to be a place where people tell the truth, take ownership, and leave things better than they found them."},
+  {title:"Accepting an award", t:"Thank you. This recognition belongs to the people who stayed late, who solved the problems nobody else wanted to touch, and who never stopped believing in what we are building. I am honored to accept it on their behalf. We are just getting started, and the best work is still ahead of us."},
+  {title:"Strategy in three points", t:"Our strategy for next year comes down to three priorities. First, we will grow our core business by focusing on our most loyal customers. Second, we will launch two new products that solve problems our competitors ignore. Third, we will build a culture of speed, where good decisions today beat perfect decisions next month."},
+  {title:"Negotiation opener", t:"I appreciate you making the time today. Let me be direct about where we stand. We value this partnership, and we want it to continue. At the same time, the current terms no longer reflect the value we deliver. I would like us to leave this room with an agreement that is fair, sustainable, and good for both organizations."},
+  {title:"Board summary", t:"Let me give you the headline first. We are ahead of plan on revenue, behind plan on hiring, and on track for profitability by the fourth quarter. The main risk is talent. We need senior engineers faster than the market is providing them. My recommendation is to approve the additional recruiting budget we outlined in the appendix."},
+];
+const IMPROMPTU = [
+  "What is the single most important quality of a great leader, and why?",
+  "Why should an investor back you instead of your competitors?",
+  "Describe a difficult decision you made and what you learned from it.",
+  "Explain what you do for a living to a ten-year-old.",
+  "What will your industry look like in five years?",
+  "How do you handle a team member who keeps missing deadlines?",
+  "What is a belief you hold that most people disagree with?",
+  "Tell me about a failure that made you better.",
+  "If you had one minute with the prime minister, what would you say?",
+  "What makes a company culture great?",
+  "How do you make decisions when you do not have enough information?",
+  "What is your biggest strength, and how do you use it at work?",
+  "Why do most projects fail, and how do you prevent it?",
+  "What advice would you give your younger self?",
+  "How should leaders communicate bad news?",
+  "What does success look like for you in three years?",
+  "Convince me to read your favorite book.",
+  "What would you do in your first ninety days as CEO of a struggling company?",
+  "How do you build trust with a new team?",
+  "Should companies let employees work from home? Take a position.",
+  "What is the most valuable skill nobody teaches at school?",
+  "How do you stay calm under pressure?",
+  "Describe your ideal customer and why they choose you.",
+  "What is one thing you would change about how meetings are run?",
+  "How do you motivate people who are not motivated by money?",
+  "What is the biggest risk facing your business right now?",
+  "Introduce yourself as if you were opening a major conference.",
+  "Why is clear communication a competitive advantage?",
+  "What would you cut if you had to reduce the budget by twenty percent?",
+  "Pitch the city you live in as the best place to start a business.",
+];
+const SCENARIOS = [
+  {title:"Board update: missed target", ctx:"Revenue came in 8% below plan this quarter. The board is concerned.", task:"Give a 2-minute update: the headline, the reason, your plan, and what you need from the board.", fw:"BLUF — Bottom Line Up Front: headline → why → plan → ask."},
+  {title:"All-hands: announcing a reorganization", ctx:"You are merging two departments. People are anxious about their jobs.", task:"Announce it to the whole company with clarity and empathy.", fw:"What → Why → What it means for you → What happens next."},
+  {title:"60-second investor elevator pitch", ctx:"You meet a top investor in an elevator.", task:"Pitch your company (real or imaginary) in about one minute.", fw:"Problem → Solution → Proof → Ask."},
+  {title:"Customer apology after an outage", ctx:"Your service was down for a full day. A key client is angry.", task:"Call the client: own it, explain, and rebuild trust.", fw:"Acknowledge → Own → Fix → Prevent → Commit."},
+  {title:"Tough media question", ctx:"A journalist asks: 'Your company laid off 200 people while executives got bonuses. How do you justify that?'", task:"Answer calmly, honestly, and stay on message.", fw:"Acknowledge → Bridge → Key message → Proof."},
+  {title:"Asking for budget", ctx:"You need $500,000 for a new initiative and the CFO is skeptical.", task:"Make the business case and close with a clear ask.", fw:"SCR — Situation → Complication → Resolution → Ask."},
+  {title:"Saying no to a big client", ctx:"Your largest client wants a custom feature that would derail your roadmap.", task:"Decline firmly while protecting the relationship.", fw:"Appreciate → Clear no → Reason → Alternative."},
+  {title:"Opening a conference keynote", ctx:"You are the first speaker in front of 1,000 people.", task:"Deliver a powerful 90-second opening that hooks the audience.", fw:"Hook (story or bold fact) → Big idea → Why it matters → Promise."},
+  {title:"Motivating the team after losing a deal", ctx:"Your team spent three months on a deal and lost it to a competitor.", task:"Speak to the team: acknowledge, reframe, and refocus.", fw:"Acknowledge → Lesson → Belief → Next target."},
+  {title:"Giving tough feedback", ctx:"A senior manager is talented but treats their team badly.", task:"Deliver the feedback directly and constructively.", fw:"SBI — Situation → Behavior → Impact → Expectation."},
+  {title:"Presenting a new strategy", ctx:"You are shifting the company from services to a product business.", task:"Present the new strategy to your leadership team.", fw:"Rule of Three: three priorities, one sentence each, then the first step."},
+  {title:"Handling a hostile question in Q&A", ctx:"An employee asks: 'Why should we believe anything leadership says after the last broken promise?'", task:"Respond with honesty and authority, without getting defensive.", fw:"Pause → Validate → Own → Facts → Commitment."},
+  {title:"Introducing yourself to a new team", ctx:"It is your first day as their new leader.", task:"Introduce yourself, your values, and how you like to work.", fw:"Past → Present → Future: who I am, what I value, where we are going."},
+  {title:"Closing a sales meeting", ctx:"The buyer likes your product but keeps delaying the decision.", task:"Summarize the value and ask for the commitment.", fw:"Recap value → Address the risk → Direct ask → Next step."},
+];
+const RAPID = [
+  "In one sentence: what is your top priority this quarter?",
+  "Yes or no, and why: should every leader be on social media?",
+  "Describe your company in ten words.",
+  "What is one thing you would never compromise on?",
+  "Give me your answer first: is remote work here to stay?",
+  "What is the best decision you made this year?",
+  "Name one risk and one opportunity in your market.",
+  "Why should I hire you? Go.",
+  "What do you want people to say about you when you leave a room?",
+  "One sentence: what does great customer service mean?",
+  "What would you do with an extra hour every day?",
+  "Recommend a single action to cut costs.",
+  "Pick one: speed or perfection? Defend it.",
+  "What is your leadership style in one phrase?",
+  "What does your team need most from you right now?",
+  "State your opinion: are meetings mostly a waste of time?",
+  "What is your company's unfair advantage?",
+  "Give one piece of advice to a first-time manager.",
+  "What will you do differently tomorrow?",
+  "Describe the perfect employee in three words, then explain one.",
+  "Answer directly: should we raise prices?",
+  "What is one habit that made you more productive?",
+  "Your quarterly goal, in one sentence, with a number.",
+  "What would your best customer say about you?",
+];
+const PHRASES = [
+  ["I think we should…","We should… / I recommend…"],
+  ["I just wanted to check in","I'm following up on [topic]."],
+  ["Sorry to bother you","Thank you for your time."],
+  ["Does that make sense?","What questions do you have?"],
+  ["I'll try to get it done","I will have it done by Friday."],
+  ["Hopefully we can hit the target","We will hit the target. Here's how."],
+  ["It's kind of a big problem","It's a serious problem."],
+  ["I'm not sure, but maybe…","My view is…"],
+  ["Maybe we could consider…","Let's…"],
+  ["I feel like the numbers are down","The numbers are down 12%."],
+  ["I guess my point is…","My point is…"],
+  ["To be honest…","(delete it — everything you say should be honest)"],
+  ["Basically / Literally / Actually","(delete — pause instead)"],
+  ["No problem","Happy to help. / My pleasure."],
+  ["I don't know","I'll find out and get back to you by 3 pm."],
+  ["This might be a stupid question","(delete — just ask the question)"],
+  ["We're kind of behind","We are two weeks behind. Here's the recovery plan."],
+  ["If that's okay with you","(state the plan; invite objections instead)"],
+  ["I was wondering if you could…","Please…  / Can you… by Thursday?"],
+  ["Just a quick question","One question:"],
+];
+const FRAMEWORKS = [
+  ["BLUF","Bottom Line Up Front. Say the conclusion in your first sentence, then support it. Executives decide in the first 30 seconds."],
+  ["PREP","Point → Reason → Example → Point. Perfect for impromptu answers."],
+  ["SCR","Situation → Complication → Resolution. McKinsey's storytelling spine for recommendations."],
+  ["Rule of Three","Group ideas in threes: 'First… Second… Finally…'. Easy to say, easy to remember."],
+  ["What / So What / Now What","The fact → why it matters → the action. Ideal for updates and reports."],
+  ["The Power Pause","Replace every filler word with a 1-second silence. Silence sounds like certainty."],
+  ["Downward inflection","End statements with your pitch going DOWN. Rising endings sound like questions and signal doubt."],
+  ["One idea per sentence","Short sentences. Strong verbs. Cut the qualifiers."],
+];
+const TIPS = [
+  "Before any important call, breathe in for 4 seconds, hold for 4, out for 6. Calm breath = calm voice.",
+  "Silence is a power move. Pause for one full second before answering a hard question.",
+  "Lead with the answer. Then give the reasons. Never make the listener wait for your point.",
+  "Stress one key word per sentence. It instantly adds authority and variety.",
+  "Replace 'I think' with 'I recommend' or 'My view is'. Own your opinion.",
+  "Finish strong: end every message with a clear next step or ask.",
+  "Record one real meeting this week and listen back at 1.5x. You will hear your habits instantly.",
+  "Slow down on numbers and names. Those are the words people need to remember.",
+  "Stand when you take important calls. Posture changes your voice.",
+  "Cut 'just', 'actually', and 'basically' from your emails today — your speech will follow.",
+  "Eye contact for one full thought, then move. It reads as confidence, not intensity.",
+  "Practice your first sentence of any presentation until it is effortless. The start sets your status.",
+];
+const DIMS = {
+  clarity:{name:"Clarity", desc:"How clearly the words came through (articulation & accuracy)."},
+  fluency:{name:"Fluency", desc:"Free of fillers, repeats and stalls."},
+  pace:{name:"Pace", desc:"Speaking speed in the executive range (130–165 wpm)."},
+  confidence:{name:"Confidence", desc:"No hedging, no apologies, statements that land."},
+  delivery:{name:"Vocal Delivery", desc:"Pitch variety and strategic pauses."},
+  structure:{name:"Structure", desc:"Answer first, signposts, strong close."},
+};
+const LEVELS = [
+  [0,"Speaker"],[150,"Presenter"],[400,"Team Lead"],[800,"Manager"],[1400,"Director"],[2200,"Vice President"],[3200,"Executive"],[4500,"CEO"],[6500,"Keynote CEO"],
+];
+
+/* ======================= STORAGE ======================= */
+const KEY = "articulationCoach.v1";
+function defaultState(){return {profile:{name:"",lang:"en-US",apiKey:"",goal:15}, takes:[], days:{}, reportSeen:0};}
+let S;
+try{ S = Object.assign(defaultState(), JSON.parse(localStorage.getItem(KEY)||"{}")); S.profile = Object.assign(defaultState().profile, S.profile); }catch(e){ S = defaultState(); }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ alert("Could not save progress: "+e.message); } }
+
+/* ======================= UTIL ======================= */
+const $ = (s,el=document)=>el.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
+const avg = a => a.length? a.reduce((x,y)=>x+y,0)/a.length : null;
+function dayKey(d=new Date()){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function hashStr(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function pick(arr,r){return arr[Math.floor(r()*arr.length)];}
+function pickN(arr,n,r){const a=[...arr];const out=[];while(out.length<n&&a.length){out.push(a.splice(Math.floor(r()*a.length),1)[0]);}return out;}
+function fmtTime(s){s=Math.max(0,Math.round(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
+function scoreColor(v){return v==null?"var(--muted)":v>=80?"var(--good)":v>=60?"var(--warn)":"var(--bad)";}
+function xpTotal(){return S.takes.reduce((a,t)=>a+Math.round((t.overall||0)/10),0) + Object.values(S.days).filter(d=>d.completed).length*25;}
+function levelInfo(){const xp=xpTotal();let i=0;for(let k=0;k<LEVELS.length;k++){if(xp>=LEVELS[k][0])i=k;}const cur=LEVELS[i],next=LEVELS[i+1];return{xp,title:cur[1],idx:i,next:next?next[0]:null,nextTitle:next?next[1]:null,pct:next?(xp-cur[0])/(next[0]-cur[0])*100:100};}
+function streak(){let n=0;const d=new Date();if(!S.days[dayKey(d)]?.completed){d.setDate(d.getDate()-1);}while(S.days[dayKey(d)]?.completed){n++;d.setDate(d.getDate()-1);}return n;}
+
+/* ======================= TEXT ANALYSIS ======================= */
+const FILLER_PHRASES = ["you know","i mean","you see","or something","and stuff","at the end of the day","or whatever","and so on","you know what i mean"];
+const FILLER_WORDS = ["um","uh","uhm","umm","uhh","er","erm","ah","ahh","hmm","mm","basically","actually","literally","totally","honestly","anyway","whatever","ok so","okay so"];
+const HEDGE_PHRASES = ["i think","i guess","i feel like","i suppose","i'm not sure","i am not sure","i don't know","kind of","sort of","a little bit","a bit","more or less","i would say","i'd say","in a way","try to","i'll try","we'll try","i hope","i believe maybe","it seems like","maybe","perhaps","probably","hopefully","possibly","might","somewhat","fairly","pretty much"];
+const WEAK_PHRASES = ["sorry","i'm sorry","does that make sense","if that's okay","if that makes sense","i was wondering","just wanted","no worries","for what it's worth","this might be a stupid question","to be honest","just","really","very","stuff","things like that"];
+const POWER_PHRASES = ["first","firstly","second","secondly","third","finally","the bottom line","bottom line","my recommendation","i recommend","we recommend","we will","i will","in summary","to summarize","here's why","here is why","the key","therefore","as a result","the data","specifically","our priority","my priority","next step","next steps","i commit","we commit","my ask","the answer is","my answer is","let's","let us","i'm confident","i am confident","the reason","for example","in short","the goal","the plan","clearly","decisively"];
+const OPENERS = ["my answer","the answer","yes","no","i recommend","my recommendation","the bottom line","bottom line","we will","simply put","in short","the key","my view","my position","i believe","we need","our priority","my priority","the headline","here's","here is","the truth is","absolutely","definitely","without question"];
+const CLOSERS = ["in summary","to summarize","the bottom line","bottom line","my ask","next step","next steps","let's","that's why","in short","so my recommendation","i recommend","we will","i will","i'm asking","i am asking","thank you","call to action","that is why","in conclusion","to conclude"];
+const LIKE_OK_PREV = new Set(["would","i","you","we","they","he","she","look","looks","looked","feel","feels","felt","sounds","seem","seems","things","something","anything","nothing","much","more","exactly","i'd","we'd","you'd","they'd","don't","didn't","doesn't","really","just","people","others","not","dislike"]);
+const REWRITE = {"i think":"","i guess":"","i feel like":"","i suppose":"","kind of":"","sort of":"","a little bit":"","maybe":"","perhaps":"","probably":"","hopefully":"","possibly":"","somewhat":"","pretty much":"","i'll try":"I will","we'll try":"we will","try to":"","might":"will","just":"","really":"","very":"","sorry":"","i'm sorry":"","does that make sense":"what questions do you have","if that's okay":"","if that makes sense":"","i was wondering":"","just wanted":"want","no worries":"","to be honest":"","i'm not sure":"","i am not sure":"","i don't know":"I will find out","i would say":"","i'd say":"","i hope":"I expect","it seems like":"","fairly":"","more or less":"","in a way":"","a bit":"","stuff":"","things like that":"","for what it's worth":""};
+
+function tokenize(text){
+  return (text||"").replace(/[’]/g,"'").split(/\s+/).filter(Boolean).map(w=>({w, n:w.toLowerCase().replace(/[^a-z0-9']/g,"").replace(/^'+|'+$/g,"")})).filter(t=>t.n);
+}
+function compilePhrases(list){return list.map(p=>p.split(" ")).sort((a,b)=>b.length-a.length);}
+const C_FILL_P=compilePhrases(FILLER_PHRASES), C_FILL_W=compilePhrases(FILLER_WORDS), C_HEDGE=compilePhrases(HEDGE_PHRASES), C_WEAK=compilePhrases(WEAK_PHRASES), C_POWER=compilePhrases(POWER_PHRASES);
+
+function analyzeText(text){
+  const toks = tokenize(text);
+  const tag = new Array(toks.length).fill(null); // {cat, phrase, start}
+  const hits = {filler:{},hedge:{},weak:{},power:{},repeat:{}};
+  function mark(compiled, cat){
+    for(let i=0;i<toks.length;i++){
+      if(tag[i]) continue;
+      for(const ph of compiled){
+        if(i+ph.length>toks.length) continue;
+        let ok=true;
+        for(let k=0;k<ph.length;k++){ if(toks[i+k].n!==ph[k] || tag[i+k]){ok=false;break;} }
+        if(ok){ const p=ph.join(" "); for(let k=0;k<ph.length;k++) tag[i+k]={cat,p,start:k===0}; hits[cat][p]=(hits[cat][p]||0)+1; i+=ph.length-1; break; }
+      }
+    }
+  }
+  mark(C_FILL_P,"filler");
+  // "like" as filler & "so" at start
+  for(let i=0;i<toks.length;i++){
+    if(tag[i]) continue;
+    const prev = i>0?toks[i-1].n:"";
+    if(toks[i].n==="like" && !LIKE_OK_PREV.has(prev)){ tag[i]={cat:"filler",p:"like",start:true}; hits.filler.like=(hits.filler.like||0)+1; }
+    if(toks[i].n==="so" && (i===0 || ["and","um","uh","okay","ok","but","well"].includes(prev))){ tag[i]={cat:"filler",p:"so",start:true}; hits.filler.so=(hits.filler.so||0)+1; }
+    if(toks[i].n==="well" && i===0){ tag[i]={cat:"filler",p:"well",start:true}; hits.filler.well=(hits.filler.well||0)+1; }
+  }
+  mark(C_FILL_W,"filler"); mark(C_HEDGE,"hedge"); mark(C_WEAK,"weak"); mark(C_POWER,"power");
+  // repeats: same word twice in a row (stutter / restart)
+  for(let i=1;i<toks.length;i++){
+    if(toks[i].n===toks[i-1].n && !tag[i] && !["that","had","very","no","yes","bye"].includes(toks[i].n)){ tag[i]={cat:"repeat",p:toks[i].n,start:true}; hits.repeat[toks[i].n]=(hits.repeat[toks[i].n]||0)+1; }
+  }
+  const count = c => Object.values(hits[c]).reduce((a,b)=>a+b,0);
+  const words = toks.length;
+  const uniq = new Set(toks.map(t=>t.n)).size;
+  const first = toks.slice(0,20).map(t=>t.n).join(" ");
+  const last = toks.slice(-25).map(t=>t.n).join(" ");
+  const hasAny=(s,list)=>list.some(p=>(" "+s+" ").includes(" "+p+" "));
+  return {
+    toks, tag, hits, words,
+    fillers:count("filler"), hedges:count("hedge"), weak:count("weak"), power:count("power"), repeats:count("repeat"),
+    uniqueRatio: words? uniq/words : 0,
+    openerStrong: hasAny(first, OPENERS),
+    closerStrong: hasAny(last, CLOSERS),
+    signposts: ["first","second","third","finally","firstly","secondly"].filter(w=>toks.some(t=>t.n===w)).length,
+  };
+}
+function topHits(obj,n=3){return Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,n).map(([k,v])=>`“${k}” ×${v}`).join(", ");}
+
+function ceoRewrite(text){
+  const A = analyzeText(text);
+  const out=[];
+  for(let i=0;i<A.toks.length;i++){
+    const t=A.tag[i], w=A.toks[i].w;
+    if(t && (t.cat==="filler"||t.cat==="repeat")) continue;
+    if(t && (t.cat==="hedge"||t.cat==="weak")){ if(t.start){ const r=REWRITE[t.p]; if(r) out.push(r); } continue; }
+    out.push(w);
+  }
+  let s=out.join(" ").replace(/\s+/g," ").trim().replace(/\bi\b/g,"I").replace(/\bi'm\b/gi,"I'm");
+  s=s.replace(/\s+([.,!?;:])/g,"$1").replace(/([.!?])\s+([a-z])/g,(_,a,b)=>a+" "+b.toUpperCase()).replace(/^[\s.,;:]+/,"");
+  if(!s) return "";
+  s=s[0].toUpperCase()+s.slice(1);
+  if(!/[.!?]$/.test(s)) s+=".";
+  return s;
+}
+
+/* alignment for read-aloud accuracy */
+function alignWords(target, spoken){
+  const T=tokenize(target).map(t=>t.n.replace(/'/g,"")), P=tokenize(spoken).map(t=>t.n.replace(/'/g,""));
+  const n=T.length,m=P.length;
+  const dp=Array.from({length:n+1},()=>new Uint16Array(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--) dp[i][j]= T[i]===P[j]? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+  const matched=new Array(n).fill(false);let i=0,j=0;
+  while(i<n&&j<m){ if(T[i]===P[j]){matched[i]=true;i++;j++;} else if(dp[i+1][j]>=dp[i][j+1]) i++; else j++; }
+  const tt=tokenize(target);
+  const missed=[...new Set(tt.filter((_,k)=>!matched[k]).map(t=>t.w.replace(/[.,!?;:]+$/,"")))];
+  return {accuracy: n? dp[0][0]/n : 0, matched, words:tt, missed};
+}
+
+/* ======================= AUDIO ======================= */
+function detectPitch(buf, sr){
+  let rms=0; for(let i=0;i<buf.length;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/buf.length);
+  if(rms<0.01) return 0;
+  const minLag=Math.floor(sr/420), maxLag=Math.floor(sr/70), N=buf.length-maxLag;
+  let best=-1,bestLag=0; const corr=new Float32Array(maxLag+2);
+  for(let lag=minLag;lag<=maxLag;lag++){
+    let c=0,e1=0,e2=0;
+    for(let i=0;i<N;i+=2){ c+=buf[i]*buf[i+lag]; e1+=buf[i]*buf[i]; e2+=buf[i+lag]*buf[i+lag]; }
+    const v=c/Math.sqrt(e1*e2+1e-12); corr[lag]=v;
+    if(v>best){best=v;bestLag=lag;}
+  }
+  if(best<0.6) return 0;
+  const a=corr[bestLag-1]||0,b=corr[bestLag],c=corr[bestLag+1]||0;
+  const shift = (a-c)/(2*(a-2*b+c)||1);
+  const f = sr/(bestLag+(isFinite(shift)?clamp(shift,-1,1):0));
+  return (f>70&&f<420)?f:0;
+}
+function analyzeAudio(frames){
+  if(!frames||frames.length<10) return null;
+  const rmsSorted=frames.map(f=>f.rms).sort((a,b)=>a-b);
+  const noise=rmsSorted[Math.floor(rmsSorted.length*0.1)];
+  const peak=rmsSorted[Math.floor(rmsSorted.length*0.95)];
+  const thr=Math.max(0.008, noise*2.2, peak*0.12);
+  frames.forEach(f=>f.v=f.rms>thr);
+  const voicedIdx=frames.map((f,i)=>f.v?i:-1).filter(i=>i>=0);
+  if(voicedIdx.length<5) return {speaking:0};
+  const dt=frames[1].t-frames[0].t;
+  const s=voicedIdx[0], e=voicedIdx[voicedIdx.length-1];
+  const speaking=(e-s+1)*dt;
+  // pauses & segments
+  const segs=[]; let pauses=[]; let segStart=s, run=0;
+  for(let i=s;i<=e;i++){
+    if(!frames[i].v){ run++; }
+    else{ if(run*dt>=0.45){ pauses.push(run*dt); segs.push([segStart,i-run-1]); segStart=i; } run=0; }
+  }
+  segs.push([segStart,e]);
+  const strategic=pauses.filter(p=>p>=0.45&&p<2.2).length, longP=pauses.filter(p=>p>=2.2).length;
+  // pitch
+  const pitched=frames.filter(f=>f.v&&f.p>0).map(f=>f.p);
+  let pitchVar=null, med=null;
+  if(pitched.length>15){
+    const sorted=[...pitched].sort((a,b)=>a-b); med=sorted[Math.floor(sorted.length/2)];
+    const st=pitched.map(p=>12*Math.log2(p/med)).filter(x=>Math.abs(x)<12);
+    const m=avg(st); pitchVar=Math.sqrt(avg(st.map(x=>(x-m)**2)));
+  }
+  // endings: rising (uptalk) vs falling
+  let rising=0,falling=0,evaluated=0;
+  if(med){
+    const per=Math.round(0.4/dt);
+    for(let k=0;k<segs.length;k++){
+      const [a,b]=segs[k]; if((b-a)*dt<0.8) continue;
+      const tail=frames.slice(Math.max(a,b-per+1),b+1).filter(f=>f.p>0).map(f=>12*Math.log2(f.p/med));
+      const body=frames.slice(Math.max(a,b-3*per),Math.max(a,b-per)).filter(f=>f.p>0).map(f=>12*Math.log2(f.p/med));
+      if(tail.length<3||body.length<3) continue;
+      const tm=[...tail].sort((x,y)=>x-y)[Math.floor(tail.length/2)], bm=[...body].sort((x,y)=>x-y)[Math.floor(body.length/2)];
+      evaluated++; if(tm-bm>1.8) rising++; else if(tm-bm< -1) falling++;
+    }
+  }
+  const vdb=frames.filter(f=>f.v).map(f=>20*Math.log10(f.rms+1e-9));
+  return {speaking, strategic, longPauses:longP, pauseRate: strategic/(speaking/60||1), pitchVar, medianPitch:med, rising, falling, endings:evaluated, uptalkPct: evaluated? rising/evaluated : null, meanDb: avg(vdb)};
+}
+
+class Recorder{
+  constructor(lang){this.lang=lang;}
+  async start(cb){
+    this.cb=cb; this.finals=[]; this.interim=""; this.frames=[]; this.conf=[]; this.active=true; this.chunks=[];
+    this.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    const AC=window.AudioContext||window.webkitAudioContext; this.ctx=new AC();
+    const src=this.ctx.createMediaStreamSource(this.stream); this.an=this.ctx.createAnalyser(); this.an.fftSize=2048; src.connect(this.an);
+    this.buf=new Float32Array(this.an.fftSize); this.t0=performance.now();
+    this.iv=setInterval(()=>{
+      this.an.getFloatTimeDomainData(this.buf);
+      let r=0; for(let i=0;i<this.buf.length;i++) r+=this.buf[i]*this.buf[i]; r=Math.sqrt(r/this.buf.length);
+      const p = r>0.01? detectPitch(this.buf,this.ctx.sampleRate):0;
+      this.frames.push({t:(performance.now()-this.t0)/1000,rms:r,p});
+      cb.onLevel && cb.onLevel(r);
+    },50);
+    try{ this.mr=new MediaRecorder(this.stream); this.mr.ondataavailable=e=>e.data.size&&this.chunks.push(e.data); this.mr.start(); }catch(e){ this.mr=null; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(SR){
+      const rec=this.rec=new SR(); rec.lang=this.lang; rec.continuous=true; rec.interimResults=true; rec.maxAlternatives=1;
+      rec.onresult=e=>{
+        let interim="";
+        for(let i=e.resultIndex;i<e.results.length;i++){
+          const r=e.results[i];
+          if(r.isFinal){ this.finals.push(r[0].transcript.trim()); if(r[0].confidence>0) this.conf.push(r[0].confidence); }
+          else interim+=r[0].transcript;
+        }
+        this.interim=interim; cb.onText && cb.onText(this.finals.join(" "), interim);
+      };
+      rec.onerror=e=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed"){ cb.onError&&cb.onError("Speech recognition was blocked. Allow microphone access for this page (and use Chrome or Edge)."); } else if(e.error==="network"){ cb.onError&&cb.onError("Speech recognition needs an internet connection (Chrome/Edge send audio to their speech service)."); } };
+      rec.onend=()=>{ if(this.active){ try{rec.start();}catch(e){} } else if(this._endResolve){ this._endResolve(); } };
+      try{ rec.start(); }catch(e){}
+    }
+  }
+  async stop(){
+    this.active=false; clearInterval(this.iv);
+    const dur=(performance.now()-this.t0)/1000;
+    if(this.rec){ await new Promise(res=>{ this._endResolve=res; try{this.rec.stop();}catch(e){res();} setTimeout(res,1500); }); }
+    if(this.interim.trim()) this.finals.push(this.interim.trim());
+    let url=null;
+    if(this.mr && this.mr.state!=="inactive"){ await new Promise(res=>{ this.mr.onstop=res; this.mr.stop(); }); url=URL.createObjectURL(new Blob(this.chunks,{type:this.mr.mimeType||"audio/webm"})); }
+    this.stream.getTracks().forEach(t=>t.stop()); try{ await this.ctx.close(); }catch(e){}
+    return {transcript:this.finals.join(" ").replace(/\s+/g," ").trim(), confidence: avg(this.conf), duration:dur, frames:this.frames, audioUrl:url};
+  }
+}
+
+/* ======================= SCORING ======================= */
+function scoreTake(item, rec){
+  const A = analyzeText(rec.transcript);
+  const au = analyzeAudio(rec.frames);
+  const speakSec = au && au.speaking>2 ? au.speaking : rec.duration;
+  const wpm = A.words ? A.words/(speakSec/60) : 0;
+  const m = {words:A.words, wpm:Math.round(wpm), fillers:A.fillers, hedges:A.hedges, weak:A.weak, power:A.power, repeats:A.repeats,
+    fillerRate: A.words? +(A.fillers/A.words*100).toFixed(1):0, hedgeRate: A.words? +(A.hedges/A.words*100).toFixed(1):0,
+    vocab:+A.uniqueRatio.toFixed(2), duration:Math.round(rec.duration), speaking:Math.round(speakSec),
+    pitchVar: au&&au.pitchVar!=null? +au.pitchVar.toFixed(1):null, uptalk: au&&au.uptalkPct!=null? Math.round(au.uptalkPct*100):null,
+    pauses: au? au.strategic:null, longPauses: au? au.longPauses:null, pauseRate: au? +(au.pauseRate||0).toFixed(1):null, meanDb: au&&au.meanDb!=null? Math.round(au.meanDb):null,
+    recConf: rec.confidence!=null? Math.round(rec.confidence*100):null};
+  const sc = {clarity:null,fluency:null,pace:null,confidence:null,delivery:null,structure:null};
+  let align=null;
+  if(item.target){ align = alignWords(item.target, rec.transcript); m.accuracy=Math.round(align.accuracy*100); }
+  if(A.words>=3){
+    sc.clarity = align? m.accuracy : (m.recConf!=null? clamp(m.recConf+5) : null);
+    if(align && m.recConf!=null) sc.clarity=Math.round(0.8*m.accuracy+0.2*m.recConf);
+  }
+  if(A.words>=6){
+    sc.fluency = Math.round(clamp(100 - m.fillerRate*7 - A.repeats*4 - (m.longPauses||0)*6));
+    if(item.drill!=="twister"){
+      const lo=item.drill==="read"||item.drill==="script"?135:130, hi=item.drill==="read"||item.drill==="script"?160:165;
+      sc.pace = Math.round(clamp(wpm<lo? 100-(lo-wpm)*2 : wpm>hi? 100-(wpm-hi)*2.5 : 100));
+    }
+    let conf = 100 - m.hedgeRate*8 - A.weak*6 + Math.min(A.power*2,10);
+    if(m.uptalk!=null && au.endings>=2) conf -= m.uptalk*0.4;
+    if(m.meanDb!=null && m.meanDb<-45) conf -= 10;
+    if(item.drill!=="twister") sc.confidence = Math.round(clamp(conf));
+    if(m.pitchVar!=null){
+      const pv=m.pitchVar; let d = pv<1.5? 50+pv*10 : pv<2.5? 65+(pv-1.5)*30 : pv<=6.5? 100 : clamp(100-(pv-6.5)*8,60);
+      if(speakSec>20){ const pr=m.pauseRate; if(pr<2) d-=15; else if(pr>16) d-=10; }
+      sc.delivery = Math.round(clamp(d));
+    }
+    if(["impromptu","scenario","rapid"].includes(item.drill)){
+      let st = 50 + Math.min(A.power*6,24) + (A.openerStrong?16:0) + (A.closerStrong&&item.drill!=="rapid"?10:0) + (A.signposts>=2?8:0);
+      if(item.drill==="scenario" && A.words<60) st-=20;
+      if(item.drill==="impromptu" && A.words<35) st-=15;
+      if(item.drill==="rapid" && A.words>70) st-=10;
+      sc.structure = Math.round(clamp(st));
+    }
+  }
+  const vals=Object.values(sc).filter(v=>v!=null);
+  const overall = vals.length? Math.round(avg(vals)) : 0;
+  return {A, au, m, sc, overall, align};
+}
+
+function buildFeedback(item, R){
+  const {A,m,sc,align,au}=R; const fb=[];
+  if(A.words<3){ fb.push(["bad","I couldn't hear enough words. Check your microphone, speak a little louder, and make sure you're using Chrome or Edge."]); return fb; }
+  if(align){
+    if(m.accuracy>=92) fb.push(["good",`Crisp articulation — ${m.accuracy}% of words came through clearly.`]);
+    else fb.push(["fix",`${m.accuracy}% word accuracy. Over-articulate the consonants (t, d, k, p) and finish every word fully before the next.`]);
+    if(align.missed.length) fb.push(["fix",`Practise these words slowly, then at full speed: <b>${esc(align.missed.slice(0,10).join(", "))}</b>.`]);
+  }
+  if(item.drill!=="twister"){
+    if(A.fillers===0 && A.words>=20) fb.push(["good","Zero filler words. That is clean, executive-level delivery."]);
+    else if(A.fillers>0) fb.push([m.fillerRate>4?"bad":"fix",`${A.fillers} filler word${A.fillers>1?"s":""} (${m.fillerRate} per 100 words): ${esc(topHits(A.hits.filler))}. Replace each one with a silent one-second pause — silence sounds certain.`]);
+    if(A.hedges>0) fb.push(["fix",`Hedging language ×${A.hedges}: ${esc(topHits(A.hits.hedge))}. CEOs state positions: say “We will…”, “I recommend…”, “My view is…”.`]);
+    if(A.weak>0) fb.push(["fix",`Weak/softening words ×${A.weak}: ${esc(topHits(A.hits.weak))}. Cut them — they shrink your message.`]);
+    if(A.power>=3) fb.push(["good",`Strong executive language (${esc(topHits(A.hits.power))}). Keep using it.`]);
+    if(A.repeats>0) fb.push(["fix",`You restarted or repeated words ${A.repeats} time${A.repeats>1?"s":""}. Slow down slightly and finish each thought before starting the next.`]);
+    if(sc.pace!=null){
+      if(m.wpm>165) fb.push(["fix",`Pace ${m.wpm} wpm — too fast. Fast talkers sound nervous. Target 140–160 and pause after key points.`]);
+      else if(m.wpm<125) fb.push(["fix",`Pace ${m.wpm} wpm — a bit slow. Lift the energy and keep momentum between ideas (target 140–160).`]);
+      else fb.push(["good",`Pace ${m.wpm} wpm — right in the executive range.`]);
+    }
+  } else {
+    fb.push(["info",`Speed: ${m.wpm} wpm. For twisters, accuracy first — then speed.`]);
+  }
+  if(m.pitchVar!=null && item.drill!=="twister"){
+    if(m.pitchVar<1.8) fb.push(["fix",`Your voice sounded monotone (pitch variation ${m.pitchVar} semitones). Stress one key word per sentence and let your pitch move.`]);
+    else if(m.pitchVar>=2.5) fb.push(["good",`Expressive voice — good pitch variety (${m.pitchVar} semitones).`]);
+  }
+  if(m.uptalk!=null && au && au.endings>=2){
+    if(m.uptalk>=35) fb.push(["bad",`${m.uptalk}% of your sentences ended with a rising pitch (uptalk). It makes statements sound like questions. Land each statement with your pitch going down.`]);
+    else if(au.falling>=au.endings/2) fb.push(["good","Your statements land with a downward finish — that sounds decisive."]);
+  }
+  if(m.pauses!=null && m.speaking>20 && item.drill!=="twister"){
+    if(m.pauseRate<2) fb.push(["fix","You rarely paused. Add a deliberate 1-second pause after each key point — it gives your words weight."]);
+    else if(m.pauseRate<=14) fb.push(["good",`Good use of pauses (${m.pauses} strategic pauses).`]);
+  }
+  if(m.longPauses>0) fb.push(["fix",`${m.longPauses} long stall${m.longPauses>1?"s":""} (over 2 seconds). If you lose your thread, use a bridge: “The key point is…”.`]);
+  if(m.meanDb!=null && m.meanDb<-45) fb.push(["fix","You were quiet. Project from your chest as if speaking to the back of a boardroom."]);
+  if(["impromptu","scenario","rapid"].includes(item.drill)){
+    if(!A.openerStrong) fb.push(["fix","Lead with your answer (BLUF). Your first sentence should state the conclusion: “My recommendation is…”, “The answer is…”."]);
+    else fb.push(["good","You led with your point — exactly what executives do."]);
+    if(item.drill!=="rapid"){
+      if(A.signposts<2 && A.words>60) fb.push(["tip","Add signposts — “First… Second… Finally…” — so listeners can follow your logic."]);
+      if(!A.closerStrong) fb.push(["tip","Close strong: finish with a summary or a clear ask (“My ask is…”, “The next step is…”)."]);
+    }
+    if(item.drill==="scenario" && A.words<60) fb.push(["fix","Your answer was short for this scenario. Aim for 90 seconds to 2 minutes covering every step of the framework."]);
+  }
+  return fb;
+}
+
+function renderTranscript(R, item){
+  if(R.align && (item.drill==="twister"||item.drill==="read"||item.drill==="script")){
+    return R.align.words.map((t,i)=>R.align.matched[i]?`<span class="ok">${esc(t.w)}</span>`:`<span class="m" title="missed or unclear">${esc(t.w)}</span>`).join(" ");
+  }
+  return R.A.toks.map((t,i)=>{
+    const g=R.A.tag[i]; if(!g) return esc(t.w);
+    const cls={filler:"f",hedge:"h",weak:"w",power:"p",repeat:"r"}[g.cat];
+    const tip={filler:"Filler — pause instead",hedge:"Hedge — "+(REWRITE[g.p]?("say: "+REWRITE[g.p]):"cut it"),weak:"Weak word — cut it",power:"Power language",repeat:"Repeated word"}[g.cat];
+    return `<span class="${cls}" title="${esc(tip)}">${esc(t.w)}</span>`;
+  }).join(" ");
+}
+
+/* ======================= AI COACH (optional) ======================= */
+async function aiCoach(item, take){
+  const key=S.profile.apiKey.trim(); if(!key) throw new Error("Add your Anthropic API key in Settings first.");
+  const system="You are an elite executive communication coach who trains CEOs and senior leaders. You are direct, specific, encouraging, and practical. You coach on clarity, conciseness, confidence, structure (BLUF, PREP, SCR, Rule of Three), word choice and vocal delivery. Speech-to-text transcripts lack punctuation and may contain recognition errors; do not criticize punctuation or obvious mis-transcriptions.";
+  const user=`Drill type: ${item.drill}\nPrompt / task: ${item.prompt||item.title||""}${item.ctx?"\nContext: "+item.ctx:""}${item.fw?"\nSuggested framework: "+item.fw:""}${item.target?"\nText to read: "+item.target:""}\n\nTranscript of what I said:\n"""${take.transcript}"""\n\nMeasured metrics: ${JSON.stringify(take.metrics)}\nScores (0-100): ${JSON.stringify(take.scores)}\n\nCoach me to sound like a confident CEO. Reply with ONLY a JSON object with these keys:\n{"headline": one-sentence verdict, "strengths": [2-3 short strings], "fixes": [{"issue": string, "why": string, "do_this": string}] (2-4 items, most important first), "ceo_version": a rewrite of my answer as a confident CEO would say it, same core content, under 150 words, "drill": one specific micro-exercise for tomorrow}`;
+  const res = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true","anthropic-beta":"server-side-fallback-2026-07-01"},
+    body:JSON.stringify({model:"claude-opus-5-5",max_tokens:8000,output_config:{effort:"medium"},fallbacks:"default",system,messages:[{role:"user",content:user}]})});
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data?.error?.message || ("HTTP "+res.status));
+  if(data.stop_reason==="refusal") throw new Error("The AI coach declined this request. Try again with a different answer.");
+  const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+  const s=text.indexOf("{"), e=text.lastIndexOf("}");
+  if(s<0||e<0) throw new Error("Unexpected response from the AI coach.");
+  return JSON.parse(text.slice(s,e+1));
+}
+function renderAI(j){
+  return `<div class="ai"><h3>🤖 AI Coach</h3><p><b>${esc(j.headline)}</b></p>
+  ${(j.strengths||[]).length?`<p class="small muted">Strengths</p><ul>${j.strengths.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`:""}
+  ${(j.fixes||[]).length?`<p class="small muted">Fixes</p><ul>${j.fixes.map(f=>`<li><b>${esc(f.issue)}</b> — ${esc(f.why)}<br><span style="color:var(--gold2)">Do this:</span> ${esc(f.do_this)}</li>`).join("")}</ul>`:""}
+  ${j.ceo_version?`<p class="small muted">How a CEO would say it</p><div class="rewrite">${esc(j.ceo_version)}</div>`:""}
+  ${j.drill?`<p style="margin-top:10px"><span class="pill gold">Tomorrow's micro-drill</span> ${esc(j.drill)}</p>`:""}</div>`;
+}
+
+/* ======================= DRILL RUNNER ======================= */
+const SR_OK = !!(window.SpeechRecognition||window.webkitSpeechRecognition);
+const MIC_OK = !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+let activeRecorder=null;
+
+function ring(v,size=120){const r=size/2-9,c=2*Math.PI*r,p=(v||0)/100;return `<div class="scorering" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="#0c1528" stroke-width="10" fill="none"/><circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="${scoreColor(v)}" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="${c*p} ${c}"/></svg><div class="v" style="font-size:${size/4}px">${v??"–"}</div></div>`;}
+
+function itemHTML(item){
+  let h=`<div class="row space"><div><span class="pill gold">${esc(item.label)}</span> <span class="pill">${fmtTime(item.maxSec)} max</span></div></div>`;
+  h+=`<h2 style="margin-top:12px">${esc(item.title)}</h2><p class="muted" style="margin:0">${item.instructions}</p>`;
+  if(item.ctx) h+=`<div class="prompt"><span class="label">Situation</span><br>${esc(item.ctx)}<br><br><span class="label">Your task</span><br>${esc(item.prompt)}</div>`;
+  else if(item.target) h+=`<div class="prompt read">${esc(item.display||item.target)}</div>`;
+  else if(item.prompt) h+=`<div class="prompt">“${esc(item.prompt)}”</div>`;
+  if(item.fw) h+=`<div class="frame"><b>Framework:</b> ${esc(item.fw)}</div>`;
+  return h;
+}
+
+function runItem(el, item, opts={}){
+  el.innerHTML = `<div class="card">${itemHTML(item)}
+    <div class="row" style="gap:22px;margin-top:16px">
+      <button class="recbtn" id="rb">START</button>
+      <div><div class="timer" id="tm">0:00</div><div class="small muted" id="st">${SR_OK?"Press start and speak out loud.":"⚠ Speech recognition needs Chrome or Edge."}</div></div>
+      <div><div class="label">Mic level</div><div class="meter"><i id="lv"></i></div>
+      <div class="chips"><span class="chip"><b id="lw">0</b>words</span><span class="chip"><b id="lp">–</b>wpm</span><span class="chip"><b id="lf">0</b>fillers</span><span class="chip"><b id="lh">0</b>hedges</span></div></div>
+    </div>
+    <div class="live" id="lt"><span class="muted">Your words will appear here as you speak…</span></div>
+    </div><div id="res" style="margin-top:16px"></div>`;
+  const rb=$("#rb",el), tm=$("#tm",el), st=$("#st",el), lv=$("#lv",el), lt=$("#lt",el);
+  let timerIv=null, t0=0, busy=false;
+  async function stop(){
+    if(!activeRecorder||busy) return; busy=true; clearInterval(timerIv);
+    rb.classList.remove("on"); rb.textContent="…"; rb.disabled=true; st.textContent="Analysing your delivery…";
+    const r=activeRecorder; activeRecorder=null;
+    const rec=await r.stop();
+    rb.textContent="AGAIN"; rb.disabled=false; st.textContent="Done. Review your feedback below."; busy=false;
+    finish(rec);
+  }
+  rb.onclick=async()=>{
+    if(activeRecorder){ return stop(); }
+    if(!MIC_OK){ alert("Microphone not available in this browser."); return; }
+    $("#res",el).innerHTML=""; lt.innerHTML='<span class="muted">Listening…</span>';
+    const r=new Recorder(S.profile.lang);
+    try{
+      await r.start({
+        onLevel:v=>{ lv.style.width=Math.min(100,v*400)+"%"; },
+        onText:(fin,int)=>{ const a=analyzeText(fin+" "+int); lt.innerHTML=esc(fin)+' <span class="interim">'+esc(int)+'</span>'; $("#lw",el).textContent=a.words; $("#lf",el).textContent=a.fillers; $("#lh",el).textContent=a.hedges; const sec=(performance.now()-t0)/1000; if(sec>4) $("#lp",el).textContent=Math.round(a.words/(sec/60)); },
+        onError:msg=>{ st.innerHTML='<span style="color:var(--bad)">'+esc(msg)+'</span>'; }
+      });
+    }catch(e){ alert("Could not access the microphone: "+e.message+"\n\nAllow microphone access in your browser and try again."); return; }
+    activeRecorder=r; t0=performance.now(); rb.classList.add("on"); rb.textContent="STOP"; st.textContent="Recording… press STOP when finished.";
+    timerIv=setInterval(()=>{ const s=(performance.now()-t0)/1000; tm.textContent=fmtTime(s)+" / "+fmtTime(item.maxSec); if(s>=item.maxSec) stop(); },250);
+  };
+  function finish(rec){
+    const R=scoreTake(item, rec);
+    const fb=buildFeedback(item,R);
+    const take={id:Date.now()+"-"+Math.random().toString(36).slice(2,6), date:dayKey(), ts:Date.now(), drill:item.drill, title:item.title, prompt:item.prompt||item.target||"", transcript:rec.transcript, metrics:R.m, scores:R.sc, overall:R.overall, feedback:fb.map(f=>f[1].replace(/<[^>]+>/g,"")), session:!!opts.session};
+    if(R.A.words>=3){ S.takes.push(take); const d=S.days[take.date]||(S.days[take.date]={minutes:0,completed:false}); d.minutes=+(d.minutes+rec.duration/60).toFixed(2); save(); }
+    const rewrite = !item.target && R.A.words>=8 ? ceoRewrite(rec.transcript) : "";
+    const dimCells=Object.keys(DIMS).map(k=>`<div class="dim"><div class="label">${DIMS[k].name}</div><div class="n" style="color:${scoreColor(R.sc[k])}">${R.sc[k]??"–"}</div></div>`).join("");
+    const legend = item.target? `<div class="legend"><span><i style="background:#cfe9da"></i>clear</span><span><i style="background:#ffb3ae"></i>missed / unclear</span></div>`
+      : `<div class="legend"><span><i style="background:#ffb3ae"></i>filler</span><span><i style="background:#ffe2a0"></i>hedge</span><span><i style="background:#ffcf9a"></i>weak word</span><span><i style="background:#d8c8ff"></i>repeat</span><span><i style="background:#9df0c8"></i>power language</span></div>`;
+    $("#res",el).innerHTML = `<div class="card">
+      <div class="row" style="gap:22px;align-items:flex-start">${ring(R.overall)}<div class="dims">${dimCells}</div></div>
+      <div class="chips" style="margin-top:14px">
+        <span class="chip"><b>${R.m.wpm}</b>wpm</span><span class="chip"><b>${R.m.words}</b>words</span>
+        <span class="chip"><b>${R.m.fillers}</b>fillers</span><span class="chip"><b>${R.m.hedges}</b>hedges</span>
+        ${R.m.accuracy!=null?`<span class="chip"><b>${R.m.accuracy}%</b>accuracy</span>`:""}
+        ${R.m.pitchVar!=null?`<span class="chip"><b>${R.m.pitchVar}</b>pitch variety (st)</span>`:""}
+        ${R.m.uptalk!=null?`<span class="chip"><b>${R.m.uptalk}%</b>rising endings</span>`:""}
+        ${R.m.pauses!=null?`<span class="chip"><b>${R.m.pauses}</b>pauses</span>`:""}
+      </div>
+      <h3 style="margin-top:18px">Coach feedback</h3>
+      <ul class="fb">${fb.map(([t,x])=>`<li class="${t}">${x}</li>`).join("")}</ul>
+      ${R.A.words?`<h3 style="margin-top:18px">Your words — corrected</h3>${legend}<div class="tx">${renderTranscript(R,item)}</div>`:""}
+      ${rewrite?`<h3 style="margin-top:18px">Cleaner, more confident version</h3><div class="rewrite">${esc(rewrite)}</div><p class="small muted">Fillers removed and hedges replaced. Read this version aloud once now, so you remember how it should sound.</p>`:""}
+      ${rec.audioUrl?`<h3 style="margin-top:18px">Listen back</h3><audio controls src="${rec.audioUrl}" style="width:100%"></audio>`:""}
+      <div id="aibox" style="margin-top:16px"></div>
+      <div class="row" style="margin-top:16px">
+        ${S.profile.apiKey&&R.A.words>=3?'<button class="btn" id="aib">🤖 Get AI Coach feedback</button>':""}
+        <button class="btn" id="again">↺ Try again</button>
+        ${opts.nextLabel?`<button class="btn primary" id="next">${opts.nextLabel}</button>`:""}
+      </div></div>`;
+    $("#again",el).onclick=()=>runItem(el,item,opts);
+    if($("#next",el)) $("#next",el).onclick=()=>opts.onNext && opts.onNext(take);
+    if($("#aib",el)) $("#aib",el).onclick=async(e)=>{ e.target.disabled=true; e.target.textContent="Thinking…"; try{ $("#aibox",el).innerHTML=renderAI(await aiCoach(item,take)); e.target.remove(); }catch(err){ $("#aibox",el).innerHTML=`<div class="banner warn">${esc(err.message)}</div>`; e.target.disabled=false; e.target.textContent="🤖 Get AI Coach feedback"; } };
+    opts.onTake && opts.onTake(take);
+    $("#res",el).scrollIntoView({behavior:"smooth",block:"start"});
+  }
+}
+
+/* ======================= ITEMS / PLAN ======================= */
+function mkTwister(tw){ return {drill:"twister",label:"Warm-up · Articulation",title:"Tongue twister",instructions:"Say it <b>3 times in a row</b>. Start slowly and exaggerate every consonant, then speed up while staying crisp.",target:[tw.t,tw.t,tw.t].join(" "),display:tw.t,maxSec:30}; }
+function mkRead(p){ return {drill:"read",label:"Read aloud · Executive voice",title:p.title,instructions:"Read this as if you were addressing your whole company. Slow down on key words, pause at full stops, and land each sentence with a downward finish.",target:p.t,maxSec:90}; }
+function mkImpromptu(q){ return {drill:"impromptu",label:"Impromptu · Think on your feet",title:"Answer without preparing",instructions:"Take 5 seconds to think, then answer for 60–90 seconds. Use <b>PREP</b>: Point → Reason → Example → Point.",prompt:q,fw:"PREP — state your point, give one reason, one example, restate your point.",maxSec:100}; }
+function mkScenario(s){ return {drill:"scenario",label:"CEO scenario · Leadership communication",title:s.title,instructions:"Picture the room. Stand up if you can. Speak for 90 seconds to 2 minutes.",ctx:s.ctx,prompt:s.task,fw:s.fw,maxSec:150}; }
+function mkRapid(q,i,n){ return {drill:"rapid",label:`Rapid fire ${i}/${n} · Answer first`,title:"20-second answer",instructions:"Give your answer in the <b>first sentence</b>, then one reason. Stop. No fillers.",prompt:q,maxSec:25}; }
+function mkScript(text){ return {drill:"script",label:"My script · Rehearsal",title:"Rehearse your own speech",instructions:"Deliver your script as if it were the real thing.",target:text,maxSec:Math.max(60,Math.min(600,Math.round(tokenize(text).length/2.3)+20))}; }
+
+function dailyPlan(dk=dayKey()){
+  const r=rng(hashStr(dk+(S.profile.name||"")));
+  const lvl=levelInfo().idx;
+  const tw=TWISTERS.filter(t=>t.lvl<=1+Math.min(2,Math.floor(lvl/2)));
+  const twisters=pickN(tw.length>=2?tw:TWISTERS,2,r);
+  return [
+    {name:"Articulation warm-up",min:2,icon:"👄",items:twisters.map(mkTwister),why:"Wakes up lips, tongue and jaw for crisp consonants."},
+    {name:"Executive read-aloud",min:3,icon:"📜",items:[mkRead(pick(PASSAGES,r))],why:"Builds a calm, authoritative tone and accurate pronunciation."},
+    {name:"Impromptu answer",min:3,icon:"⚡",items:[mkImpromptu(pick(IMPROMPTU,r))],why:"Trains you to think and speak clearly without preparation."},
+    {name:"CEO scenario",min:4,icon:"🏛️",items:[mkScenario(pick(SCENARIOS,r))],why:"Real leadership moments with a proven framework."},
+    {name:"Rapid fire",min:3,icon:"🎯",items:pickN(RAPID,3,r).map((q,i)=>mkRapid(q,i+1,3)),why:"Answer-first discipline under time pressure."},
+  ];
+}
+
+/* ======================= VIEWS ======================= */
+const tabs={};
+function show(tab){
+  if(activeRecorder){ if(!confirm("A recording is in progress. Stop and leave?")) return; activeRecorder.stop(); activeRecorder=null; }
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+  document.querySelectorAll("main>section").forEach(s=>s.classList.toggle("hidden",s.id!=="tab-"+tab));
+  tabs[tab]&&tabs[tab]();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.tab));
+
+function supportBanner(){
+  const msgs=[];
+  if(!SR_OK) msgs.push("Your browser does not support live speech recognition. Open this app in <b>Google Chrome</b> or <b>Microsoft Edge</b> for transcripts and full feedback.");
+  if(!MIC_OK) msgs.push("Microphone access is unavailable in this browser.");
+  $("#support").innerHTML = msgs.map(m=>`<div class="banner warn">${m}</div>`).join("");
+}
+
+function takesBetween(fromDays,toDays){ const now=Date.now(); return S.takes.filter(t=>t.ts>now-fromDays*864e5 && t.ts<=now-toDays*864e5); }
+function dimAvg(takes){ const o={}; for(const k of Object.keys(DIMS)){ o[k]=avg(takes.map(t=>t.scores[k]).filter(v=>v!=null)); } o.overall=avg(takes.map(t=>t.overall)); o.fillerRate=avg(takes.filter(t=>t.drill!=="twister"&&t.metrics.words>=10).map(t=>t.metrics.fillerRate)); o.wpm=avg(takes.filter(t=>t.drill!=="twister"&&t.metrics.words>=10).map(t=>t.metrics.wpm)); o.hedgeRate=avg(takes.filter(t=>t.drill!=="twister"&&t.metrics.words>=10).map(t=>t.metrics.hedgeRate)); o.uptalk=avg(takes.map(t=>t.metrics.uptalk).filter(v=>v!=null)); return o; }
+
+function radar(vals,size=230){
+  const keys=Object.keys(DIMS), cx=size/2, cy=size/2, R=size/2-38;
+  const pt=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/keys.length;return [cx+Math.cos(a)*R*v/100, cy+Math.sin(a)*R*v/100];};
+  let g=""; [25,50,75,100].forEach(l=>{g+=`<polygon points="${keys.map((_,i)=>pt(i,l).join(",")).join(" ")}" fill="none" stroke="#24365a"/>`;});
+  const poly=keys.map((k,i)=>pt(i,vals[k]??0).join(",")).join(" ");
+  const labels=keys.map((k,i)=>{const[x,y]=pt(i,122);return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" fill="#93a3bf" font-size="11">${DIMS[k].name.replace("Vocal ","")}</text>`;}).join("");
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${g}<polygon points="${poly}" fill="rgba(212,169,74,.25)" stroke="#d4a94a" stroke-width="2"/>${labels}</svg>`;
+}
+
+tabs.home=function(){
+  const L=levelInfo(), dk=dayKey(), today=S.days[dk]||{minutes:0,completed:false}, plan=dailyPlan();
+  const wk=dimAvg(takesBetween(7,0));
+  const first=S.takes[0], daysSinceStart= first? Math.floor((Date.now()-first.ts)/864e5):0;
+  const weekNo=Math.floor(daysSinceStart/7);
+  const reportReady = weekNo>=1 && S.reportSeen<weekNo;
+  const tip=TIPS[hashStr(dk)%TIPS.length];
+  const name=S.profile.name?(", "+esc(S.profile.name)):"";
+  const hr=new Date().getHours(); const greet=hr<12?"Good morning":hr<18?"Good afternoon":"Good evening";
+  $("#tab-home").innerHTML=`
+    <h1>${greet}${name}.</h1><p class="sub">15 focused minutes a day. Speak with clarity, presence and CEO-level confidence.</p>
+    ${reportReady?`<div class="banner good row space"><span>📊 Your <b>Week ${weekNo} progress report</b> is ready.</span><button class="btn" id="seeRep">View report</button></div>`:""}
+    ${!S.profile.name?`<div class="banner info">Welcome! Tell me your name in <a href="#" id="goSet">Settings</a> to personalise your coach. Then start your first session — your first scores become your baseline.</div>`:""}
+    <div class="grid g4">
+      <div class="card"><div class="label">Streak</div><div class="stat">🔥 ${streak()} <small>days</small></div></div>
+      <div class="card"><div class="label">Today</div><div class="stat">${Math.round(today.minutes)} <small>/ ${S.profile.goal} min speaking</small></div><div class="bar" style="margin-top:8px"><i style="width:${Math.min(100,today.minutes/(S.profile.goal*0.6)*100)}%"></i></div></div>
+      <div class="card"><div class="label">7-day score</div><div class="stat" style="color:${scoreColor(wk.overall)}">${wk.overall!=null?Math.round(wk.overall):"–"} <small>/ 100</small></div></div>
+      <div class="card"><div class="label">Level</div><div class="stat" style="font-size:20px">${L.title}</div><div class="bar" style="margin-top:8px"><i style="width:${L.pct}%"></i></div><div class="small muted">${L.xp} XP${L.next?` · ${L.next-L.xp} to ${L.nextTitle}`:""}</div></div>
+    </div>
+    <div class="grid g2 homeg" style="margin-top:16px">
+      <div class="card hi">
+        <div class="row space"><h2 style="margin:0">Today's 15-minute session</h2>${today.completed?'<span class="pill" style="color:var(--good)">✓ Completed</span>':""}</div>
+        <ul class="plan" style="margin-top:8px">${plan.map((p,i)=>`<li><div class="num">${i+1}</div><div style="flex:1"><b>${p.icon} ${p.name}</b> <span class="muted small">· ${p.min} min</span><div class="small muted">${p.why}</div></div></li>`).join("")}</ul>
+        <button class="btn primary big" id="startS" style="margin-top:10px;width:100%">${today.completed?"Do another round":"▶ Start today's session"}</button>
+      </div>
+      <div class="card"><h2>Your communication profile</h2>
+        ${wk.overall!=null?`<div style="display:grid;place-items:center">${radar(wk)}</div><p class="small muted" style="text-align:center">Average of the last 7 days</p>`:`<p class="muted">Complete a session to see your profile across Clarity, Fluency, Pace, Confidence, Delivery and Structure.</p>`}
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px"><span class="pill gold">CEO tip of the day</span><p style="margin:10px 0 0;font-size:16px">${tip}</p></div>`;
+  $("#startS").onclick=()=>show("session");
+  if($("#seeRep")) $("#seeRep").onclick=()=>{ S.reportSeen=weekNo; save(); show("progress"); };
+  if($("#goSet")) $("#goSet").onclick=e=>{e.preventDefault();show("settings");};
+};
+
+/* ---- Session ---- */
+let sess=null;
+tabs.session=function(){
+  if(!sess || sess.date!==dayKey() || sess.done){ sess={date:dayKey(), plan:dailyPlan(), step:-1, item:0, started:Date.now(), takes:[], done:false}; }
+  renderSession();
+};
+function renderSession(){
+  const el=$("#tab-session"), P=sess.plan;
+  const head=`<div class="step-head">${P.map((_,i)=>`<div class="${i<sess.step?"done":i===sess.step?"cur":""}"></div>`).join("")}</div>`;
+  if(sess.step===-1){
+    el.innerHTML=`<h1>Daily Session</h1><p class="sub">Five drills, about 15 minutes. Find a quiet spot, sit or stand tall, and speak as if the room matters.</p>
+    <div class="card hi"><ul class="plan">${P.map((p,i)=>`<li><div class="num">${i+1}</div><div><b>${p.icon} ${p.name}</b> <span class="muted small">· ${p.min} min · ${p.items.length} ${p.items.length>1?"rounds":"round"}</span><div class="small muted">${p.why}</div></div></li>`).join("")}</ul>
+    <div class="banner info" style="margin-top:14px">Before you begin: 3 deep breaths — in for 4, hold for 4, out for 6. Relax your jaw and shoulders.</div>
+    <button class="btn primary big" id="go">Begin session</button></div>`;
+    $("#go").onclick=()=>{sess.step=0;sess.item=0;renderSession();};
+    return;
+  }
+  if(sess.step>=P.length){ return renderSummary(); }
+  const step=P[sess.step], item=step.items[sess.item];
+  el.innerHTML=`${head}<div class="row space"><h1>${step.icon} ${step.name}</h1><span class="muted">Step ${sess.step+1} of ${P.length}${step.items.length>1?` · round ${sess.item+1}/${step.items.length}`:""}</span></div><p class="sub">${step.why}</p><div id="runner"></div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="skip">Skip ${step.items.length>1&&sess.item<step.items.length-1?"round":"step"} →</button></div>`;
+  const advance=()=>{ if(sess.item<step.items.length-1){sess.item++;} else {sess.step++;sess.item=0;} renderSession(); };
+  const last = sess.step===P.length-1 && sess.item===step.items.length-1;
+  runItem($("#runner"),item,{session:true,nextLabel:last?"Finish session ✓":"Continue →",onNext:advance,onTake:t=>{ sess.takes=sess.takes.filter(x=>x.title+x.prompt!==t.title+t.prompt); sess.takes.push(t); }});
+  $("#skip").onclick=advance;
+}
+function renderSummary(){
+  const el=$("#tab-session");
+  const d=S.days[dayKey()]||(S.days[dayKey()]={minutes:0,completed:false});
+  const firstTime=!d.completed; d.completed=true; save();
+  const T=sess.takes; sess.done=true;
+  const a=dimAvg(T);
+  const prev=dimAvg(S.takes.filter(t=>t.date<dayKey()).slice(-25));
+  const keys=Object.keys(DIMS).filter(k=>a[k]!=null);
+  const weakest=keys.sort((x,y)=>a[x]-a[y])[0];
+  const fb={}; T.forEach(t=>t.feedback.forEach(f=>{fb[f]=(fb[f]||0)+1;}));
+  el.innerHTML=`<h1>Session complete 🎉</h1><p class="sub">${firstTime?"+25 XP streak bonus. ":""}🔥 Streak: ${streak()} day${streak()===1?"":"s"}. Consistency beats intensity — see you tomorrow.</p>
+  <div class="card hi"><div class="row" style="gap:24px;align-items:flex-start">${ring(a.overall!=null?Math.round(a.overall):null,140)}
+   <div class="dims">${Object.keys(DIMS).map(k=>{const v=a[k],p=prev[k];const dlt=v!=null&&p!=null?Math.round(v-p):null;return `<div class="dim"><div class="label">${DIMS[k].name}</div><div class="n" style="color:${scoreColor(v)}">${v!=null?Math.round(v):"–"} ${dlt!=null&&dlt!==0?`<small class="${dlt>0?"up":"down"}" style="font-size:13px">${dlt>0?"▲":"▼"}${Math.abs(dlt)}</small>`:""}</div></div>`;}).join("")}</div></div>
+   ${weakest?`<div class="banner info" style="margin-top:16px"><b>Tomorrow's focus: ${DIMS[weakest].name}.</b> ${DIMS[weakest].desc} ${focusTip(weakest)}</div>`:""}
+   <div class="chips">${a.wpm!=null?`<span class="chip"><b>${Math.round(a.wpm)}</b>avg wpm</span>`:""}${a.fillerRate!=null?`<span class="chip"><b>${a.fillerRate.toFixed(1)}</b>fillers / 100 words</span>`:""}${a.hedgeRate!=null?`<span class="chip"><b>${a.hedgeRate.toFixed(1)}</b>hedges / 100 words</span>`:""}<span class="chip"><b>${T.length}</b>takes</span></div>
+  </div>
+  <div class="row" style="margin-top:16px"><button class="btn primary" id="toProg">See my progress</button><button class="btn" id="toHome">Back to Today</button></div>`;
+  $("#toProg").onclick=()=>show("progress"); $("#toHome").onclick=()=>show("home");
+}
+function focusTip(k){return {
+  clarity:"Do two extra tongue twisters slowly, over-articulating every consonant.",
+  fluency:"Every time you feel an 'um' coming, close your mouth and pause instead.",
+  pace:"Read a passage at a steady 150 wpm — about 2.5 words per second — and pause at every full stop.",
+  confidence:"Ban 'I think', 'just' and 'maybe' for one day. Use 'I recommend' and 'We will'.",
+  delivery:"Pick one word per sentence to stress, and end every statement with your pitch going down.",
+  structure:"Start every answer with your conclusion, then 'First… Second… Finally…'.",
+}[k]||"";}
+
+/* ---- Free practice ---- */
+tabs.practice=function(){
+  const el=$("#tab-practice");
+  const cards=[
+    ["twister","👄","Tongue twisters","Articulation & crisp consonants"],
+    ["read","📜","Executive read-aloud","Tone, pace and pronunciation"],
+    ["impromptu","⚡","Impromptu answer","Think on your feet with PREP"],
+    ["scenario","🏛️","CEO scenarios","Board, all-hands, media, investors"],
+    ["rapid","🎯","Rapid fire","Answer first in 20 seconds"],
+    ["script","📝","Rehearse my speech","Paste your own presentation"],
+    ["free","🗣️","Free talk","Talk about anything, get full feedback"],
+  ];
+  el.innerHTML=`<h1>Free Practice</h1><p class="sub">Target a specific skill, rehearse a real presentation, or just talk.</p>
+  <div class="grid g3">${cards.map(c=>`<div class="card drillcard" data-d="${c[0]}"><div class="e">${c[1]}</div><h3 style="margin:8px 0 2px">${c[2]}</h3><div class="small muted">${c[3]}</div></div>`).join("")}</div><div id="prun" style="margin-top:20px"></div>`;
+  el.querySelectorAll(".drillcard").forEach(c=>c.onclick=()=>practice(c.dataset.d));
+};
+function practice(d){
+  const box=$("#prun"); const r=Math.random;
+  if(d==="script"){
+    box.innerHTML=`<div class="card"><h2>Rehearse your own speech</h2><p class="muted">Paste a presentation, pitch or talking points. I'll check every word you deliver, your pace and your vocal delivery.</p><textarea id="scr" placeholder="Paste your script here…">${esc(localStorage.getItem("ac.script")||"")}</textarea><div class="row" style="margin-top:10px"><button class="btn primary" id="useScr">Start rehearsal</button></div></div>`;
+    $("#useScr").onclick=()=>{ const t=$("#scr").value.trim(); if(tokenize(t).length<5){alert("Please paste at least a few sentences.");return;} try{localStorage.setItem("ac.script",t);}catch(e){} runItem(box,mkScript(t),{nextLabel:"Back to drills",onNext:()=>{box.innerHTML="";}}); };
+    box.scrollIntoView({behavior:"smooth"}); return;
+  }
+  const make={
+    twister:()=>mkTwister(pick(TWISTERS,r)), read:()=>mkRead(pick(PASSAGES,r)), impromptu:()=>mkImpromptu(pick(IMPROMPTU,r)),
+    scenario:()=>mkScenario(pick(SCENARIOS,r)), rapid:()=>mkRapid(pick(RAPID,r),1,1),
+    free:()=>({drill:"impromptu",label:"Free talk",title:"Talk about anything",instructions:"Talk about your day, your work, a decision, an idea — for up to 3 minutes. You'll get full feedback.",prompt:"Speak about anything you like.",maxSec:180}),
+  }[d];
+  const go=()=>runItem(box,make(),{nextLabel:"🔀 New prompt",onNext:go});
+  go(); box.scrollIntoView({behavior:"smooth"});
+}
+
+/* ---- Progress ---- */
+function lineChart(series,{w=520,h=170,min=0,max=100,color="#d4a94a",label=""}={}){
+  if(series.length<1) return `<p class="muted small">Not enough data yet.</p>`;
+  const pad={l:34,r:10,t:10,b:24}, iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const vals=series.map(s=>s.v); if(max==null) max=Math.max(...vals)*1.15||1; if(min==null) min=Math.max(0,Math.floor(Math.min(...vals)*0.8/10)*10);
+  const x=i=>pad.l+(series.length===1?iw/2:i*iw/(series.length-1)), y=v=>pad.t+ih-(v-min)/(max-min||1)*ih;
+  let g=""; for(let k=0;k<=4;k++){const v=min+(max-min)*k/4;g+=`<line x1="${pad.l}" x2="${w-pad.r}" y1="${y(v)}" y2="${y(v)}" stroke="#1d2c4a"/><text x="${pad.l-6}" y="${y(v)+4}" text-anchor="end">${Math.round(v)}</text>`;}
+  const step=Math.ceil(series.length/7);
+  series.forEach((s,i)=>{ if(i%step===0||i===series.length-1) g+=`<text x="${x(i)}" y="${h-6}" text-anchor="middle">${s.l}</text>`; });
+  const path=series.map((s,i)=>(i?"L":"M")+x(i).toFixed(1)+","+y(s.v).toFixed(1)).join("");
+  const dots=series.map((s,i)=>`<circle cx="${x(i)}" cy="${y(s.v)}" r="3.5" fill="${color}"><title>${s.l}: ${Math.round(s.v*10)/10}${label}</title></circle>`).join("");
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" width="100%" preserveAspectRatio="xMidYMid meet">${g}<path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>${dots}</svg>`;
+}
+function dailySeries(field, days=30, filter=()=>true){
+  const out=[]; const d=new Date(); d.setDate(d.getDate()-days+1);
+  for(let i=0;i<days;i++){ const k=dayKey(d); const ts=S.takes.filter(t=>t.date===k&&filter(t)); const v=avg(ts.map(field).filter(v=>v!=null)); if(v!=null) out.push({l:k.slice(5).replace("-","/"),v}); d.setDate(d.getDate()+1); }
+  return out;
+}
+function weeklyReport(){
+  const cur=takesBetween(7,0), prev=takesBetween(14,7);
+  const first=S.takes[0];
+  if(!cur.length) return `<p class="muted">No practice in the last 7 days. Start a session — your report builds automatically.</p>`;
+  const a=dimAvg(cur), b=dimAvg(prev);
+  const daysPracticed=new Set(cur.map(t=>t.date)).size;
+  const mins=Object.entries(S.days).filter(([k])=>{const t=new Date(k+"T12:00");return Date.now()-t<7*864e5;}).reduce((s,[,v])=>s+v.minutes,0);
+  const rows=Object.keys(DIMS).map(k=>{const v=a[k],p=b[k];const dl=v!=null&&p!=null?v-p:null;return `<tr><td>${DIMS[k].name}</td><td>${p!=null?Math.round(p):"–"}</td><td><b style="color:${scoreColor(v)}">${v!=null?Math.round(v):"–"}</b></td><td>${dl!=null?`<span class="${dl>=0?"up":"down"}">${dl>=0?"▲":"▼"} ${Math.abs(Math.round(dl))}</span>`:"–"}</td></tr>`;}).join("");
+  const metricRow=(n,k,unit,lowerBetter,dec=1)=>{const v=a[k],p=b[k];if(v==null)return "";const dl=p!=null?v-p:null;const good=dl!=null&&(lowerBetter?dl<=0:dl>=0);return `<tr><td>${n}</td><td>${p!=null?p.toFixed(dec):"–"}${unit}</td><td><b>${v.toFixed(dec)}${unit}</b></td><td>${dl!=null?`<span class="${good?"up":"down"}">${dl>=0?"+":""}${dl.toFixed(dec)}</span>`:"–"}</td></tr>`;};
+  const keys=Object.keys(DIMS).filter(k=>a[k]!=null);
+  const best=[...keys].sort((x,y)=>a[y]-a[x])[0], weak=[...keys].sort((x,y)=>a[x]-a[y])[0];
+  const gains=keys.filter(k=>b[k]!=null).map(k=>[k,a[k]-b[k]]).sort((x,y)=>y[1]-x[1]);
+  let story=`This week you practised on <b>${daysPracticed} of 7 days</b> (${Math.round(mins)} min of speaking, ${cur.length} takes). `;
+  story+= best? `Your strongest area is <b>${DIMS[best].name}</b> (${Math.round(a[best])}). `:"";
+  if(gains.length&&gains[0][1]>1) story+=`Biggest improvement: <b>${DIMS[gains[0][0]].name}</b>, up ${Math.round(gains[0][1])} points. `;
+  if(a.fillerRate!=null&&b.fillerRate!=null) story+= a.fillerRate<b.fillerRate? `Filler words dropped from ${b.fillerRate.toFixed(1)} to ${a.fillerRate.toFixed(1)} per 100 words. `:`Filler words rose to ${a.fillerRate.toFixed(1)} per 100 words — make pausing your #1 habit this week. `;
+  if(weak) story+=`<br><br><b>Focus for next week: ${DIMS[weak].name}.</b> ${focusTip(weak)}`;
+  if(daysPracticed<5) story+=`<br><br>Aim for at least 5 sessions next week — daily repetition is what rewires speaking habits.`;
+  let base="";
+  if(first && Date.now()-first.ts>=7*864e5){
+    const bl=dimAvg(S.takes.filter(t=>t.ts<first.ts+7*864e5));
+    base=`<p class="small" style="margin-top:12px"><span class="pill gold">Since you started</span> Overall score ${Math.round(bl.overall)} → <b>${Math.round(a.overall)}</b> (${a.overall-bl.overall>=0?"+":""}${Math.round(a.overall-bl.overall)})${bl.fillerRate!=null&&a.fillerRate!=null?` · fillers ${bl.fillerRate.toFixed(1)} → ${a.fillerRate.toFixed(1)} per 100 words`:""}</p>`;
+  }
+  return `<p style="font-size:15.5px">${story}</p>${base}
+  <table style="margin-top:12px"><tr><th>Skill</th><th>Last week</th><th>This week</th><th>Change</th></tr>${rows}
+  ${metricRow("Overall score","overall","",false,0)}${metricRow("Fillers / 100 words","fillerRate","",true)}${metricRow("Hedges / 100 words","hedgeRate","",true)}${metricRow("Speaking pace","wpm"," wpm",false,0)}${metricRow("Rising endings","uptalk","%",true,0)}</table>`;
+}
+tabs.progress=function(){
+  const el=$("#tab-progress"); const n=S.takes.length;
+  const speech=t=>t.drill!=="twister"&&t.metrics.words>=10;
+  const recent=[...S.takes].reverse().slice(0,25);
+  el.innerHTML=`<h1>Progress &amp; Reports</h1><p class="sub">${n} recorded takes across ${Object.keys(S.days).length} days · 🔥 ${streak()}-day streak</p>
+  <div class="card hi"><div class="row space"><h2 style="margin:0">📊 Weekly report</h2><span class="muted small">Last 7 days vs the 7 days before</span></div>${weeklyReport()}</div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h3>Overall score (30 days)</h3>${lineChart(dailySeries(t=>t.overall))}</div>
+    <div class="card"><h3>Filler words per 100 words</h3>${lineChart(dailySeries(t=>t.metrics.fillerRate,30,speech),{min:0,max:null,color:"#ef6461"})}</div>
+    <div class="card"><h3>Speaking pace (wpm) — target 140–160</h3>${lineChart(dailySeries(t=>t.metrics.wpm,30,speech),{min:null,max:null,color:"#5aa7ff",label:" wpm"})}</div>
+    <div class="card"><h3>Confidence score</h3>${lineChart(dailySeries(t=>t.scores.confidence),{color:"#3ecf8e"})}</div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>Recent takes</h3>${recent.length?recent.map(t=>`<div class="hist"><details><summary><span style="color:${scoreColor(t.overall)};font-weight:700">${t.overall}</span> · ${esc(t.title)} <span class="muted small">· ${t.date} · ${t.metrics.wpm} wpm · ${t.metrics.fillers} fillers</span></summary>
+    <p class="small muted" style="margin:8px 0 4px">What you said</p><div class="small">${esc(t.transcript)||"<i>no transcript</i>"}</div>
+    <p class="small muted" style="margin:8px 0 4px">Feedback</p><ul class="small">${(t.feedback||[]).map(f=>`<li>${esc(f)}</li>`).join("")}</ul></details></div>`).join(""):'<p class="muted">No takes yet.</p>'}</div>`;
+  const first=S.takes[0]; if(first){ const wn=Math.floor((Date.now()-first.ts)/864e5/7); if(wn>S.reportSeen){S.reportSeen=wn;save();} }
+};
+
+/* ---- Library ---- */
+tabs.library=function(){
+  $("#tab-library").innerHTML=`<h1>CEO Playbook</h1><p class="sub">The language and structures that make leaders sound clear and decisive.</p>
+  <div class="grid g2">
+   <div class="card"><h2>Weak → Executive phrasing</h2><table class="phr"><tr><th>Instead of</th><th>Say</th></tr>${PHRASES.map(p=>`<tr><td>${esc(p[0])}</td><td>${esc(p[1])}</td></tr>`).join("")}</table></div>
+   <div><div class="card"><h2>Frameworks</h2>${FRAMEWORKS.map(f=>`<p><span class="pill gold">${esc(f[0])}</span><br>${esc(f[1])}</p>`).join("")}</div>
+   <div class="card" style="margin-top:16px"><h2>Daily habits</h2><ul>${TIPS.map(t=>`<li style="margin-bottom:6px">${esc(t)}</li>`).join("")}</ul></div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h2>What the scores mean</h2><table>${Object.values(DIMS).map(d=>`<tr><td><b>${d.name}</b></td><td class="muted">${d.desc}</td></tr>`).join("")}
+  <tr><td><b>Rising endings</b></td><td class="muted">Share of sentences whose pitch goes up at the end ("uptalk"). Lower is more decisive.</td></tr>
+  <tr><td><b>Pitch variety</b></td><td class="muted">How much your pitch moves, in semitones. Below 2 sounds monotone; 2.5–6 sounds engaging.</td></tr></table>
+  <p class="small muted">Scores are estimates from your browser's speech recognition and audio analysis. Some recognisers drop "um" and "uh" from transcripts, so treat the filler count as a minimum.</p></div>`;
+};
+
+/* ---- Settings ---- */
+tabs.settings=function(){
+  const p=S.profile;
+  $("#tab-settings").innerHTML=`<h1>Settings</h1><p class="sub">Everything is stored privately in this browser on this computer.</p>
+  <div class="grid g2">
+  <div class="card"><h2>Profile</h2>
+    <label class="f"><span>Your name</span><input id="sName" value="${esc(p.name)}" placeholder="e.g. Iqbal"></label>
+    <label class="f"><span>Speech recognition accent</span><select id="sLang">${[["en-US","English (US)"],["en-GB","English (UK)"],["en-IN","English (India)"],["en-AU","English (Australia)"],["en-CA","English (Canada)"],["en-ZA","English (South Africa)"],["en-NG","English (Nigeria)"],["en-PK","English (Pakistan)"]].map(([v,l])=>`<option value="${v}" ${p.lang===v?"selected":""}>${l}</option>`).join("")}</select></label>
+    <label class="f"><span>Daily goal (minutes)</span><input id="sGoal" type="number" min="5" max="60" value="${p.goal}"></label>
+    <button class="btn primary" id="sSave">Save</button> <span id="sOk" class="small muted"></span>
+  </div>
+  <div class="card"><h2>AI Coach (optional)</h2><p class="small muted">Add an Anthropic API key to unlock deep, personalised feedback and a "how a CEO would say it" rewrite after each take. The key stays in this browser and is sent only to api.anthropic.com. Get one at console.anthropic.com.</p>
+    <label class="f"><span>Anthropic API key</span><input id="sKey" type="password" value="${esc(p.apiKey)}" placeholder="sk-ant-…"></label>
+    <button class="btn" id="sKeySave">Save key</button> <span id="sKeyOk" class="small muted"></span>
+  </div>
+  <div class="card"><h2>Microphone test</h2><p class="small muted">Speak and check that the bar moves.</p><div class="meter" style="width:100%"><i id="mt"></i></div><button class="btn" id="mtb" style="margin-top:12px">Test microphone</button></div>
+  <div class="card"><h2>Backup</h2><p class="small muted">Export your history to a file, or restore it on another computer.</p>
+    <div class="row"><button class="btn" id="exp">⬇ Export progress</button><label class="btn" style="display:inline-block">⬆ Import<input type="file" id="imp" accept=".json" class="hidden"></label><button class="btn danger" id="rst">Reset all data</button></div></div>
+  </div>`;
+  $("#sSave").onclick=()=>{ p.name=$("#sName").value.trim(); p.lang=$("#sLang").value; p.goal=clamp(+$("#sGoal").value||15,5,60); save(); $("#sOk").textContent="Saved ✓"; };
+  $("#sKeySave").onclick=()=>{ p.apiKey=$("#sKey").value.trim(); save(); $("#sKeyOk").textContent=p.apiKey?"Saved ✓ — AI Coach enabled":"Removed"; };
+  $("#exp").onclick=()=>{ const data={...S,profile:{...S.profile,apiKey:""}}; const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:"application/json"})); a.download="articulation-coach-backup-"+dayKey()+".json"; a.click(); };
+  $("#imp").onchange=e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(t=>{ const d=JSON.parse(t); if(!Array.isArray(d.takes)) throw new Error("Not a backup file"); const key=S.profile.apiKey; S=Object.assign(defaultState(),d); S.profile=Object.assign(defaultState().profile,d.profile,{apiKey:key}); save(); alert("Progress restored."); show("home"); }).catch(err=>alert("Import failed: "+err.message)); };
+  $("#rst").onclick=()=>{ if(confirm("Delete ALL your progress? This cannot be undone.")){ const key=S.profile.apiKey; S=defaultState(); S.profile.apiKey=key; save(); show("home"); } };
+  $("#mtb").onclick=async(e)=>{ try{ const st=await navigator.mediaDevices.getUserMedia({audio:true}); const ctx=new (window.AudioContext||window.webkitAudioContext)(); const an=ctx.createAnalyser(); ctx.createMediaStreamSource(st).connect(an); const b=new Float32Array(2048); e.target.textContent="Listening for 8 seconds…"; const iv=setInterval(()=>{an.getFloatTimeDomainData(b);let r=0;for(const x of b)r+=x*x;r=Math.sqrt(r/b.length);$("#mt").style.width=Math.min(100,r*400)+"%";},60); setTimeout(()=>{clearInterval(iv);st.getTracks().forEach(t=>t.stop());ctx.close();e.target.textContent="Test microphone";$("#mt").style.width="0";},8000);}catch(err){alert("Microphone error: "+err.message);} };
+};
+
+/* expose internals for testing */
+window.AC={analyzeText,ceoRewrite,alignWords,analyzeAudio,scoreTake,buildFeedback,dailyPlan,weeklyReport,detectPitch};
+supportBanner(); show("home");
+</script>
+</body>
+</html>
