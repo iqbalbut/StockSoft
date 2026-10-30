@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Articulation Coach</title>
+<meta name="theme-color" content="#0b1322">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coach">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f1a2e'/%3E%3Cpath d='M22 18h20v22a10 10 0 0 1-20 0z' fill='%23d4a94a'/%3E%3Cpath d='M16 34a16 16 0 0 0 32 0M32 50v6' stroke='%23d4a94a' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -114,25 +121,47 @@ details summary{cursor:pointer;color:var(--gold2)}
 .step-head div{flex:1;height:6px;border-radius:99px;background:var(--panel2)}
 .step-head div.done{background:var(--good)}.step-head div.cur{background:var(--gold)}
 .ai{background:#16163a;border:1px solid #3a3a80;border-radius:12px;padding:14px 16px}
-@media (max-width:900px){.app{grid-template-columns:1fr}nav{position:static;height:auto;display:flex;flex-wrap:wrap;gap:4px}nav .brand{width:100%}nav button{width:auto}.homeg{grid-template-columns:1fr}main{padding:18px 16px}.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.dims{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:560px){.g2,.g3,.g4,.homeg{grid-template-columns:1fr}}
+nav .sl{display:none}
+/* meeting mode */
+.mlive{position:fixed;inset:0;z-index:50;background:#070d18;display:flex;flex-direction:column;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));overflow:auto}
+.mtop{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mstatus{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px 8px;min-height:240px}
+.mdot{width:150px;height:150px;border-radius:50%;display:grid;place-items:center;font-size:44px;transition:background .3s,box-shadow .3s;background:#0f2a20;box-shadow:0 0 0 10px #0f2a2066}
+.mdot.amber{background:#3a2c10;box-shadow:0 0 0 12px #f2b84b33}.mdot.red{background:#3a1416;box-shadow:0 0 0 12px #ef646133}.mdot.idle{background:#18253f;box-shadow:none}
+.mcue{font-size:32px;font-weight:800;margin-top:22px;line-height:1.2;min-height:40px}
+.mcue.good{color:var(--good)}.mcue.amber{color:var(--warn)}.mcue.red{color:var(--bad)}
+.msub{color:var(--muted);margin-top:8px;font-size:16px;min-height:24px}
+.mstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.mstats div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.mstats b{display:block;font-size:22px}.mstats span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.mcard{background:var(--panel);border:1px solid #6b5420;border-radius:12px;padding:12px 14px;margin-top:10px;font-size:15px}
+.mcard li{margin:3px 0}
+.toggle{display:flex;gap:10px;align-items:center;margin:8px 0}.toggle input{width:auto}
+@media (max-width:900px){.app{grid-template-columns:1fr}
+nav{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;z-index:40;display:flex;justify-content:space-around;gap:0;padding:4px 2px max(4px,env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line)}
+nav .brand,nav .lbl{display:none}nav .sl{display:block;font-size:10.5px;margin-top:1px}
+nav button{width:auto;flex:1;min-width:0;flex-direction:column;gap:0;padding:6px 2px;margin:0;text-align:center;font-size:12px}nav .ico{width:auto;font-size:19px}
+.homeg{grid-template-columns:1fr}main{padding:18px 16px 96px}.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.dims{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.g2,.g3,.homeg{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g4 .stat{font-size:22px}.dims{flex-basis:100%}.card{padding:15px}h1{font-size:23px}}
 </style>
 </head>
 <body>
 <div class="app">
   <nav>
     <div class="brand"><div class="logo">AC</div><div><b>Articulation Coach</b><small>Speak like a CEO</small></div></div>
-    <button data-tab="home" class="active"><span class="ico">🏠</span>Today</button>
-    <button data-tab="session"><span class="ico">🎙️</span>Daily Session</button>
-    <button data-tab="practice"><span class="ico">🎯</span>Free Practice</button>
-    <button data-tab="progress"><span class="ico">📈</span>Progress &amp; Reports</button>
-    <button data-tab="library"><span class="ico">📚</span>CEO Playbook</button>
-    <button data-tab="settings"><span class="ico">⚙️</span>Settings</button>
+    <button data-tab="home" class="active"><span class="ico">🏠</span><span class="lbl">Today</span><span class="sl">Today</span></button>
+    <button data-tab="session"><span class="ico">🎙️</span><span class="lbl">Daily Session</span><span class="sl">Session</span></button>
+    <button data-tab="meeting"><span class="ico">💼</span><span class="lbl">Meeting Mode</span><span class="sl">Meeting</span></button>
+    <button data-tab="practice"><span class="ico">🎯</span><span class="lbl">Free Practice</span><span class="sl">Practice</span></button>
+    <button data-tab="progress"><span class="ico">📈</span><span class="lbl">Progress &amp; Reports</span><span class="sl">Progress</span></button>
+    <button data-tab="library"><span class="ico">📚</span><span class="lbl">CEO Playbook</span><span class="sl">Playbook</span></button>
+    <button data-tab="settings"><span class="ico">⚙️</span><span class="lbl">Settings</span><span class="sl">Settings</span></button>
   </nav>
   <main>
     <div id="support"></div>
     <section id="tab-home"></section>
     <section id="tab-session" class="hidden"></section>
+    <section id="tab-meeting" class="hidden"></section>
     <section id="tab-practice" class="hidden"></section>
     <section id="tab-progress" class="hidden"></section>
     <section id="tab-library" class="hidden"></section>
@@ -495,21 +524,23 @@ function analyzeAudio(frames){
 }
 
 class Recorder{
-  constructor(lang){this.lang=lang;}
+  constructor(lang,opts={}){this.lang=lang;this.record=opts.record!==false;this.pitchEvery=opts.pitchEvery||1;}
   async start(cb){
     this.cb=cb; this.finals=[]; this.interim=""; this.frames=[]; this.conf=[]; this.active=true; this.chunks=[];
     this.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
     const AC=window.AudioContext||window.webkitAudioContext; this.ctx=new AC();
+    if(this.ctx.state==="suspended"){ try{ await this.ctx.resume(); }catch(e){} }
     const src=this.ctx.createMediaStreamSource(this.stream); this.an=this.ctx.createAnalyser(); this.an.fftSize=2048; src.connect(this.an);
-    this.buf=new Float32Array(this.an.fftSize); this.t0=performance.now();
+    this.buf=new Float32Array(this.an.fftSize); this.t0=performance.now(); let n=0;
     this.iv=setInterval(()=>{
       this.an.getFloatTimeDomainData(this.buf);
       let r=0; for(let i=0;i<this.buf.length;i++) r+=this.buf[i]*this.buf[i]; r=Math.sqrt(r/this.buf.length);
-      const p = r>0.01? detectPitch(this.buf,this.ctx.sampleRate):0;
-      this.frames.push({t:(performance.now()-this.t0)/1000,rms:r,p});
-      cb.onLevel && cb.onLevel(r);
+      const p = r>0.01 && (n++%this.pitchEvery===0)? detectPitch(this.buf,this.ctx.sampleRate):0;
+      const f={t:(performance.now()-this.t0)/1000,rms:r,p};
+      this.frames.push(f);
+      cb.onLevel && cb.onLevel(r,f);
     },50);
-    try{ this.mr=new MediaRecorder(this.stream); this.mr.ondataavailable=e=>e.data.size&&this.chunks.push(e.data); this.mr.start(); }catch(e){ this.mr=null; }
+    if(this.record){ try{ this.mr=new MediaRecorder(this.stream); this.mr.ondataavailable=e=>e.data.size&&this.chunks.push(e.data); this.mr.start(); }catch(e){ this.mr=null; } }
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(SR){
       const rec=this.rec=new SR(); rec.lang=this.lang; rec.continuous=true; rec.interimResults=true; rec.maxAlternatives=1;
@@ -517,18 +548,20 @@ class Recorder{
         let interim="";
         for(let i=e.resultIndex;i<e.results.length;i++){
           const r=e.results[i];
-          if(r.isFinal){ this.finals.push(r[0].transcript.trim()); if(r[0].confidence>0) this.conf.push(r[0].confidence); }
+          if(r.isFinal){ const txt=r[0].transcript.trim(); this.finals.push(txt); if(r[0].confidence>0) this.conf.push(r[0].confidence); cb.onFinal && cb.onFinal(txt,(performance.now()-this.t0)/1000); }
           else interim+=r[0].transcript;
         }
         this.interim=interim; cb.onText && cb.onText(this.finals.join(" "), interim);
       };
-      rec.onerror=e=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed"){ cb.onError&&cb.onError("Speech recognition was blocked. Allow microphone access for this page (and use Chrome or Edge)."); } else if(e.error==="network"){ cb.onError&&cb.onError("Speech recognition needs an internet connection (Chrome/Edge send audio to their speech service)."); } };
+      rec.onerror=e=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed"){ cb.onError&&cb.onError("Speech recognition was blocked. Allow microphone access for this page (use Chrome, Edge or Safari)."); } else if(e.error==="network"){ cb.onError&&cb.onError("Speech recognition needs an internet connection (the browser sends audio to its speech service)."); } };
       rec.onend=()=>{ if(this.active){ try{rec.start();}catch(e){} } else if(this._endResolve){ this._endResolve(); } };
       try{ rec.start(); }catch(e){}
+      // Phones sometimes stop recognition silently (screen dim, app switch); keep it alive.
+      this.watch=setInterval(()=>{ if(this.active&&!document.hidden){ try{rec.start();}catch(e){} } },8000);
     }
   }
   async stop(){
-    this.active=false; clearInterval(this.iv);
+    this.active=false; clearInterval(this.iv); clearInterval(this.watch);
     const dur=(performance.now()-this.t0)/1000;
     if(this.rec){ await new Promise(res=>{ this._endResolve=res; try{this.rec.stop();}catch(e){res();} setTimeout(res,1500); }); }
     if(this.interim.trim()) this.finals.push(this.interim.trim());
@@ -559,7 +592,7 @@ function scoreTake(item, rec){
     if(align && m.recConf!=null) sc.clarity=Math.round(0.8*m.accuracy+0.2*m.recConf);
   }
   if(A.words>=6){
-    sc.fluency = Math.round(clamp(100 - m.fillerRate*7 - A.repeats*4 - (m.longPauses||0)*6));
+    sc.fluency = Math.round(clamp(100 - m.fillerRate*7 - A.repeats*4 - (item.drill==="meeting"?0:(m.longPauses||0)*6)));
     if(item.drill!=="twister"){
       const lo=item.drill==="read"||item.drill==="script"?135:130, hi=item.drill==="read"||item.drill==="script"?160:165;
       sc.pace = Math.round(clamp(wpm<lo? 100-(lo-wpm)*2 : wpm>hi? 100-(wpm-hi)*2.5 : 100));
@@ -570,7 +603,7 @@ function scoreTake(item, rec){
     if(item.drill!=="twister") sc.confidence = Math.round(clamp(conf));
     if(m.pitchVar!=null){
       const pv=m.pitchVar; let d = pv<1.5? 50+pv*10 : pv<2.5? 65+(pv-1.5)*30 : pv<=6.5? 100 : clamp(100-(pv-6.5)*8,60);
-      if(speakSec>20){ const pr=m.pauseRate; if(pr<2) d-=15; else if(pr>16) d-=10; }
+      if(speakSec>20 && item.drill!=="meeting"){ const pr=m.pauseRate; if(pr<2) d-=15; else if(pr>16) d-=10; }
       sc.delivery = Math.round(clamp(d));
     }
     if(["impromptu","scenario","rapid"].includes(item.drill)){
@@ -617,11 +650,11 @@ function buildFeedback(item, R){
     if(m.uptalk>=35) fb.push(["bad",`${m.uptalk}% of your sentences ended with a rising pitch (uptalk). It makes statements sound like questions. Land each statement with your pitch going down.`]);
     else if(au.falling>=au.endings/2) fb.push(["good","Your statements land with a downward finish — that sounds decisive."]);
   }
-  if(m.pauses!=null && m.speaking>20 && item.drill!=="twister"){
+  if(m.pauses!=null && m.speaking>20 && item.drill!=="twister" && item.drill!=="meeting"){
     if(m.pauseRate<2) fb.push(["fix","You rarely paused. Add a deliberate 1-second pause after each key point — it gives your words weight."]);
     else if(m.pauseRate<=14) fb.push(["good",`Good use of pauses (${m.pauses} strategic pauses).`]);
   }
-  if(m.longPauses>0) fb.push(["fix",`${m.longPauses} long stall${m.longPauses>1?"s":""} (over 2 seconds). If you lose your thread, use a bridge: “The key point is…”.`]);
+  if(m.longPauses>0 && item.drill!=="meeting") fb.push(["fix",`${m.longPauses} long stall${m.longPauses>1?"s":""} (over 2 seconds). If you lose your thread, use a bridge: “The key point is…”.`]);
   if(m.meanDb!=null && m.meanDb<-45) fb.push(["fix","You were quiet. Project from your chest as if speaking to the back of a boardroom."]);
   if(["impromptu","scenario","rapid"].includes(item.drill)){
     if(!A.openerStrong) fb.push(["fix","Lead with your answer (BLUF). Your first sentence should state the conclusion: “My recommendation is…”, “The answer is…”."]);
@@ -651,7 +684,7 @@ function renderTranscript(R, item){
 async function aiCoach(item, take){
   const key=S.profile.apiKey.trim(); if(!key) throw new Error("Add your Anthropic API key in Settings first.");
   const system="You are an elite executive communication coach who trains CEOs and senior leaders. You are direct, specific, encouraging, and practical. You coach on clarity, conciseness, confidence, structure (BLUF, PREP, SCR, Rule of Three), word choice and vocal delivery. Speech-to-text transcripts lack punctuation and may contain recognition errors; do not criticize punctuation or obvious mis-transcriptions.";
-  const user=`Drill type: ${item.drill}\nPrompt / task: ${item.prompt||item.title||""}${item.ctx?"\nContext: "+item.ctx:""}${item.fw?"\nSuggested framework: "+item.fw:""}${item.target?"\nText to read: "+item.target:""}\n\nTranscript of what I said:\n"""${take.transcript}"""\n\nMeasured metrics: ${JSON.stringify(take.metrics)}\nScores (0-100): ${JSON.stringify(take.scores)}\n\nCoach me to sound like a confident CEO. Reply with ONLY a JSON object with these keys:\n{"headline": one-sentence verdict, "strengths": [2-3 short strings], "fixes": [{"issue": string, "why": string, "do_this": string}] (2-4 items, most important first), "ceo_version": a rewrite of my answer as a confident CEO would say it, same core content, under 150 words, "drill": one specific micro-exercise for tomorrow}`;
+  const user=`Drill type: ${item.drill}\nPrompt / task: ${item.prompt||item.title||""}${item.ctx?"\nContext: "+item.ctx:""}${item.fw?"\nSuggested framework: "+item.fw:""}${item.target?"\nText to read: "+item.target:""}${item.drill==="meeting"?"\nNote: this transcript was captured live during a real meeting and may include other participants' words. Coach the speaker on their own communication, and use the talking points to judge whether the key message landed.":""}\n\nTranscript of what I said:\n"""${take.transcript}"""\n\nMeasured metrics: ${JSON.stringify(take.metrics)}\nScores (0-100): ${JSON.stringify(take.scores)}\n\nCoach me to sound like a confident CEO. Reply with ONLY a JSON object with these keys:\n{"headline": one-sentence verdict, "strengths": [2-3 short strings], "fixes": [{"issue": string, "why": string, "do_this": string}] (2-4 items, most important first), "ceo_version": a rewrite of my answer as a confident CEO would say it, same core content, under 150 words, "drill": one specific micro-exercise for tomorrow}`;
   const res = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true","anthropic-beta":"server-side-fallback-2026-07-01"},
     body:JSON.stringify({model:"claude-opus-5-5",max_tokens:8000,output_config:{effort:"medium"},fallbacks:"default",system,messages:[{role:"user",content:user}]})});
   const data = await res.json().catch(()=>({}));
@@ -671,6 +704,9 @@ function renderAI(j){
 }
 
 /* ======================= DRILL RUNNER ======================= */
+const APP_URL = "https://iqbalbut.github.io/StockSoft/";
+let installEvt=null;
+window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); installEvt=e; if(!$("#tab-home").classList.contains("hidden")) tabs.home(); });
 const SR_OK = !!(window.SpeechRecognition||window.webkitSpeechRecognition);
 const MIC_OK = !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
 let activeRecorder=null;
@@ -691,7 +727,7 @@ function runItem(el, item, opts={}){
   el.innerHTML = `<div class="card">${itemHTML(item)}
     <div class="row" style="gap:22px;margin-top:16px">
       <button class="recbtn" id="rb">START</button>
-      <div><div class="timer" id="tm">0:00</div><div class="small muted" id="st">${SR_OK?"Press start and speak out loud.":"⚠ Speech recognition needs Chrome or Edge."}</div></div>
+      <div><div class="timer" id="tm">0:00</div><div class="small muted" id="st">${SR_OK?"Press start and speak out loud.":"⚠ Speech recognition needs Chrome, Edge or Safari."}</div></div>
       <div><div class="label">Mic level</div><div class="meter"><i id="lv"></i></div>
       <div class="chips"><span class="chip"><b id="lw">0</b>words</span><span class="chip"><b id="lp">–</b>wpm</span><span class="chip"><b id="lf">0</b>fillers</span><span class="chip"><b id="lh">0</b>hedges</span></div></div>
     </div>
@@ -795,7 +831,7 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.
 
 function supportBanner(){
   const msgs=[];
-  if(!SR_OK) msgs.push("Your browser does not support live speech recognition. Open this app in <b>Google Chrome</b> or <b>Microsoft Edge</b> for transcripts and full feedback.");
+  if(!SR_OK) msgs.push("Your browser does not support live speech recognition. Open this app in <b>Google Chrome</b> or <b>Microsoft Edge</b> (computer or Android), or <b>Safari</b> (iPhone/iPad), for transcripts and full feedback.");
   if(!MIC_OK) msgs.push("Microphone access is unavailable in this browser.");
   $("#support").innerHTML = msgs.map(m=>`<div class="banner warn">${m}</div>`).join("");
 }
@@ -822,7 +858,7 @@ tabs.home=function(){
   const name=S.profile.name?(", "+esc(S.profile.name)):"";
   const hr=new Date().getHours(); const greet=hr<12?"Good morning":hr<18?"Good afternoon":"Good evening";
   $("#tab-home").innerHTML=`
-    <h1>${greet}${name}.</h1><p class="sub">15 focused minutes a day. Speak with clarity, presence and CEO-level confidence.</p>
+    <h1>${greet}${name}.</h1><p class="sub">15 focused minutes a day. Speak with clarity, presence and CEO-level confidence.</p><div id="installBox"></div>
     ${reportReady?`<div class="banner good row space"><span>📊 Your <b>Week ${weekNo} progress report</b> is ready.</span><button class="btn" id="seeRep">View report</button></div>`:""}
     ${!S.profile.name?`<div class="banner info">Welcome! Tell me your name in <a href="#" id="goSet">Settings</a> to personalise your coach. Then start your first session — your first scores become your baseline.</div>`:""}
     <div class="grid g4">
@@ -836,13 +872,16 @@ tabs.home=function(){
         <div class="row space"><h2 style="margin:0">Today's 15-minute session</h2>${today.completed?'<span class="pill" style="color:var(--good)">✓ Completed</span>':""}</div>
         <ul class="plan" style="margin-top:8px">${plan.map((p,i)=>`<li><div class="num">${i+1}</div><div style="flex:1"><b>${p.icon} ${p.name}</b> <span class="muted small">· ${p.min} min</span><div class="small muted">${p.why}</div></div></li>`).join("")}</ul>
         <button class="btn primary big" id="startS" style="margin-top:10px;width:100%">${today.completed?"Do another round":"▶ Start today's session"}</button>
+        <button class="btn" id="startM" style="margin-top:10px;width:100%">💼 Going into a meeting? Start live coaching</button>
       </div>
       <div class="card"><h2>Your communication profile</h2>
         ${wk.overall!=null?`<div style="display:grid;place-items:center">${radar(wk)}</div><p class="small muted" style="text-align:center">Average of the last 7 days</p>`:`<p class="muted">Complete a session to see your profile across Clarity, Fluency, Pace, Confidence, Delivery and Structure.</p>`}
       </div>
     </div>
     <div class="card" style="margin-top:16px"><span class="pill gold">CEO tip of the day</span><p style="margin:10px 0 0;font-size:16px">${tip}</p></div>`;
-  $("#startS").onclick=()=>show("session");
+  $("#startS").onclick=()=>show("session"); $("#startM").onclick=()=>show("meeting");
+  if(installEvt) $("#installBox").innerHTML='<div class="banner info row space"><span>📲 Install Articulation Coach as an app on this device.</span><button class="btn" id="instBtn">Install</button></div>';
+  if($("#instBtn")) $("#instBtn").onclick=async()=>{ installEvt.prompt(); try{ await installEvt.userChoice; }catch(e){} installEvt=null; $("#installBox").innerHTML=""; };
   if($("#seeRep")) $("#seeRep").onclick=()=>{ S.reportSeen=weekNo; save(); show("progress"); };
   if($("#goSet")) $("#goSet").onclick=e=>{e.preventDefault();show("settings");};
 };
@@ -900,6 +939,199 @@ function focusTip(k){return {
   delivery:"Pick one word per sentence to stress, and end every statement with your pitch going down.",
   structure:"Start every answer with your conclusion, then 'First… Second… Finally…'.",
 }[k]||"";}
+
+/* ---- Meeting Mode: live coaching in real meetings ---- */
+function mprefs(){ return S.meeting=Object.assign({name:"",key:"",points:"",ask:"",vibrate:true,audio:false,notes:true,mono:90},S.meeting||{}); }
+const CUE_COOLDOWN={filler:12,hedge:15,weak:15,fast:25,slow:40,long:60,uptalk:45,good:0};
+const CUE_LABEL={filler:"Filler words",hedge:"Hedging",weak:"Weak words",fast:"Too fast",slow:"Low energy",long:"Long monologue",uptalk:"Rising endings"};
+let MTG=null;
+
+tabs.meeting=function(){
+  if(MTG) return;
+  const m=mprefs(), el=$("#tab-meeting");
+  const past=S.takes.filter(t=>t.drill==="meeting").slice(-5).reverse();
+  el.innerHTML=`<h1>Meeting Mode</h1><p class="sub">A discreet live coach for real meetings, calls and presentations. It listens while you talk and nudges you when it matters, then gives you a debrief afterwards.</p>
+  <div class="grid g2">
+   <div class="card hi"><h2>1 · Prepare (2 minutes)</h2>
+    <label class="f"><span>Meeting</span><input id="mName" value="${esc(m.name)}" placeholder="e.g. Board review, client call"></label>
+    <label class="f"><span>My key message, in one sentence</span><input id="mKey" value="${esc(m.key)}" placeholder="e.g. We hit 92% of target and will close the gap by March."></label>
+    <label class="f"><span>Talking points (one per line)</span><textarea id="mPts" style="min-height:90px" placeholder="Revenue up 14%&#10;Hiring is the main risk&#10;Need approval for recruiting budget">${esc(m.points)}</textarea></label>
+    <label class="f"><span>My ask / close</span><input id="mAsk" value="${esc(m.ask)}" placeholder="e.g. I'm asking for approval of the budget today."></label>
+    <div class="row"><button class="btn" id="mReh">🗣️ Rehearse it out loud</button><button class="btn" id="mWarm">👄 30-sec warm-up</button></div>
+   </div>
+   <div class="card"><h2>2 · Go live</h2>
+    <label class="toggle"><input type="checkbox" id="mVib" ${m.vibrate?"checked":""}> Vibrate on cues (Android phones)</label>
+    <label class="toggle"><input type="checkbox" id="mNotes" ${m.notes?"checked":""}> Show my key message and points on screen</label>
+    <label class="toggle"><input type="checkbox" id="mAudio" ${m.audio?"checked":""}> Save audio for playback afterwards</label>
+    <label class="f" style="margin-top:8px"><span>Alert me when I talk continuously for more than</span><select id="mMono">${[[60,"60 seconds"],[90,"90 seconds"],[120,"2 minutes"],[180,"3 minutes"],[0,"Never"]].map(([v,l])=>`<option value="${v}" ${+m.mono===v?"selected":""}>${l}</option>`).join("")}</select></label>
+    <button class="btn primary big" id="mGo" style="width:100%;margin-top:6px">▶ Start live coaching</button>
+    <p class="small muted" style="margin-bottom:0">Live cues: filler words · hedging · weak words · speaking too fast or too slow · rising (“uptalk”) endings · long monologues. No sounds play, so nobody else notices.</p>
+   </div>
+  </div>
+  <div id="mprep" style="margin-top:16px"></div>
+  <div class="card" style="margin-top:16px"><h2>How to use it in a meeting</h2><ul class="small" style="margin:0;padding-left:18px">
+   <li><b>In-person meetings:</b> put your phone face-up in front of you, closer to you than to anyone else. The screen stays on while coaching.</li>
+   <li><b>Video calls:</b> run the call on your laptop and the coach on your phone next to it. Many phones give the microphone to one app at a time.</li>
+   <li>The coach hears everyone near the microphone, so other people's words can appear in your stats. A headset, or sitting closest to the phone, gives the most accurate results.</li>
+   <li>Keep the app open on screen. Phones pause the microphone when you switch apps or lock the screen.</li>
+   <li>Get consent before you save audio of other people.</li></ul></div>
+  ${past.length?`<div class="card" style="margin-top:16px"><h2>Recent meetings</h2>${past.map(t=>`<div class="hist"><span style="color:${scoreColor(t.overall)};font-weight:700">${t.overall}</span> · ${esc(t.title)} <span class="muted small">· ${t.date} · ${t.metrics.wpm} wpm · ${t.metrics.fillerRate} fillers/100 words</span></div>`).join("")}</div>`:""}`;
+  const keep=()=>{ m.name=$("#mName").value.trim(); m.key=$("#mKey").value.trim(); m.points=$("#mPts").value; m.ask=$("#mAsk").value.trim(); m.vibrate=$("#mVib").checked; m.notes=$("#mNotes").checked; m.audio=$("#mAudio").checked; m.mono=+$("#mMono").value; save(); };
+  el.querySelectorAll("input,textarea,select").forEach(i=>i.onchange=keep);
+  $("#mReh").onclick=()=>{ keep(); const txt=[m.key,...m.points.split("\n"),m.ask].map(x=>x.trim()).filter(Boolean).map(x=>/[.!?]$/.test(x)?x:x+".").join(" ");
+    if(tokenize(txt).length<4){ alert("Write your key message and a few talking points first."); return; }
+    const it=mkScript(txt); it.title="Rehearse your meeting message"; it.instructions="Say it the way you will say it in the room: answer first, calm pace, strong close.";
+    runItem($("#mprep"),it,{nextLabel:"Done",onNext:()=>{$("#mprep").innerHTML="";}}); $("#mprep").scrollIntoView({behavior:"smooth"}); };
+  $("#mWarm").onclick=()=>{ runItem($("#mprep"),mkTwister(pick(TWISTERS,Math.random)),{nextLabel:"Done",onNext:()=>{$("#mprep").innerHTML="";}}); $("#mprep").scrollIntoView({behavior:"smooth"}); };
+  $("#mGo").onclick=()=>{ keep(); startMeeting(); };
+};
+
+async function startMeeting(){
+  if(!MIC_OK){ alert("Microphone not available in this browser."); return; }
+  const m=mprefs();
+  const rec=new Recorder(S.profile.lang,{record:m.audio,pitchEvery:2});
+  const M=MTG={rec,m,cd:{},counts:{},words:0,fill:0,hedge:0,finals:[],noise:0.005,talk:0,inTurn:false,turnStart:0,lastV:-9,segStart:null,longest:0,monoWarned:false,endings:[],lastNeg:0,lastGood:0,cueUntil:0,muted:false,wl:null,hiddenGap:false};
+  const notes = m.notes && (m.key||m.points.trim()||m.ask) ? `<div class="mcard">${m.key?`<div><span class="label">Key message</span><br><b>${esc(m.key)}</b></div>`:""}${m.points.trim()?`<ul style="margin:6px 0;padding-left:18px">${m.points.split("\n").filter(x=>x.trim()).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${m.ask?`<div><span class="label">Ask</span> ${esc(m.ask)}</div>`:""}</div>`:"";
+  const ov=document.createElement("div"); ov.className="mlive"; ov.id="mlive";
+  ov.innerHTML=`<div class="mtop"><div><span class="pill gold">● LIVE</span> <b id="mel" style="font-variant-numeric:tabular-nums">0:00</b></div><div class="row" style="flex-wrap:nowrap"><button class="btn" id="mmute">Hide cues</button><button class="btn danger" id="mend">End</button></div></div>
+   <div class="mstatus"><div class="mdot idle" id="mdot">🎙️</div><div class="mcue" id="mcue">Listening…</div><div class="msub" id="msub">Speak naturally. I'll nudge you only when it matters.</div></div>
+   <div class="mstats"><div><b id="mwpm">–</b><span>pace</span></div><div><b id="mfil">0</b><span>fillers</span></div><div><b id="mhed">0</b><span>hedges</span></div><div><b id="mtalk">0:00</b><span>talk time</span></div></div>
+   ${notes}<div class="small muted" id="mwarn" style="margin-top:8px;text-align:center"></div>`;
+  document.body.appendChild(ov);
+  $("#mend").onclick=endMeeting;
+  $("#mmute").onclick=()=>{ M.muted=!M.muted; $("#mmute").textContent=M.muted?"Show cues":"Hide cues"; showIdle(); };
+  try{
+    await rec.start({
+      onLevel:(r,f)=>meetingFrame(f),
+      onFinal:(txt,t)=>meetingText(txt,t),
+      onError:msg=>{ $("#mwarn").innerHTML='<span style="color:var(--bad)">'+esc(msg)+'</span>'; }
+    });
+  }catch(e){ ov.remove(); MTG=null; alert("Could not access the microphone: "+e.message); return; }
+  M.t0=performance.now();
+  M.tick=setInterval(meetingTick,1000);
+  wakeLock(); document.addEventListener("visibilitychange",onMeetingVisibility);
+}
+async function wakeLock(){ try{ if(MTG&&navigator.wakeLock) MTG.wl=await navigator.wakeLock.request("screen"); }catch(e){} }
+function onMeetingVisibility(){ if(!MTG) return; if(document.hidden){ MTG.hiddenGap=true; } else { wakeLock(); if(MTG.hiddenGap) $("#mwarn").textContent="Coaching paused while the app was in the background. Keep it open on screen during the meeting."; } }
+
+function meetingFrame(f){
+  const M=MTG; if(!M) return;
+  const r=f.rms;
+  M.noise = r<M.noise*1.5 ? M.noise*0.98+r*0.02 : M.noise*0.999+r*0.001;
+  const v = r>Math.max(0.012,M.noise*2.5); f.lv=v;
+  if(v){
+    M.talk+=0.05;
+    if(!M.inTurn){ M.inTurn=true; M.turnStart=f.t; M.monoWarned=false; }
+    if(M.segStart==null) M.segStart=f.t;
+    M.lastV=f.t;
+  } else {
+    if(M.segStart!=null && f.t-M.lastV>=0.5){ if(M.lastV-M.segStart>=0.8) meetingEnding(M.lastV); M.segStart=null; }
+    if(M.inTurn && f.t-M.lastV>2.5){ M.inTurn=false; M.longest=Math.max(M.longest,M.lastV-M.turnStart); }
+  }
+  if(M.inTurn && M.m.mono && !M.monoWarned && f.t-M.turnStart>M.m.mono){ M.monoWarned=true; cue("long"); }
+}
+function meetingEnding(end){
+  const M=MTG; const fr=M.rec.frames.slice(-60).filter(f=>f.p>0&&f.t<=end&&f.t>end-1.2);
+  const med=a=>{const s=[...a].sort((x,y)=>x-y);return s[Math.floor(s.length/2)];};
+  const tail=fr.filter(f=>f.t>end-0.4).map(f=>f.p), body=fr.filter(f=>f.t<=end-0.4).map(f=>f.p);
+  if(tail.length<2||body.length<2) return;
+  const d=12*Math.log2(med(tail)/med(body));
+  M.endings.push(d>1.8); if(M.endings.length>5) M.endings.shift();
+  if(M.endings.length>=4 && M.endings.filter(Boolean).length>=3){ M.endings=[]; cue("uptalk"); }
+}
+function meetingText(txt,t){
+  const M=MTG; if(!M) return;
+  const A=analyzeText(txt);
+  M.finals.push({t,n:A.words}); M.words+=A.words; M.fill+=A.fillers; M.hedge+=A.hedges;
+  $("#mfil").textContent=M.fill; $("#mhed").textContent=M.hedge;
+  const top=o=>Object.keys(o)[0];
+  if(A.fillers) cue("filler",top(A.hits.filler));
+  else if(A.hedges) cue("hedge",top(A.hits.hedge));
+  else if(A.weak){ const w=Object.keys(A.hits.weak).find(k=>k!=="very"&&k!=="really"); if(w) cue("weak",w); }
+}
+function meetingTick(){
+  const M=MTG; if(!M) return;
+  const now=(performance.now()-M.t0)/1000;
+  $("#mel").textContent=fmtTime(now); $("#mtalk").textContent=fmtTime(M.talk);
+  const fr=M.rec.frames, from=fr.length-600; let vs=0; for(let i=Math.max(0,from);i<fr.length;i++) if(fr[i].lv) vs++;
+  const voicedSec=vs*0.05, recent=M.finals.filter(x=>x.t>now-30).reduce((a,x)=>a+x.n,0);
+  if(voicedSec>=12){
+    const wpm=Math.round(recent/(voicedSec/60)); M.wpm=wpm; $("#mwpm").textContent=wpm;
+    if(wpm>175) cue("fast",wpm); else if(wpm<100 && voicedSec>=20 && recent>0) cue("slow",wpm);
+  }
+  if(now>M.cueUntil && M.cueUntil) { M.cueUntil=0; showIdle(); }
+  if(M.words>40 && now-M.lastNeg>180 && now-M.lastGood>180){ M.lastGood=now; cue("good"); }
+  if(now>3*3600) endMeeting();
+}
+function showIdle(){
+  const M=MTG; if(!M) return;
+  $("#mdot").className="mdot"+(M.inTurn?"":" idle"); $("#mdot").textContent=M.inTurn?"✓":"🎙️";
+  $("#mcue").className="mcue good"; $("#mcue").textContent=M.muted?"Cues hidden":M.inTurn?"On track":"Listening…";
+  $("#msub").textContent=M.muted?"Still tracking everything for your debrief.":"Speak naturally. I'll nudge you only when it matters.";
+}
+function cue(type,detail){
+  const M=MTG; if(!M||!M.t0) return;
+  const now=(performance.now()-M.t0)/1000;
+  if(M.cd[type]!=null && now-M.cd[type]<CUE_COOLDOWN[type]) return;
+  M.cd[type]=now;
+  if(type!=="good"){ M.counts[type]=(M.counts[type]||0)+1; M.lastNeg=now; }
+  if(M.muted) return;
+  const rw=REWRITE[detail];
+  const C={
+    filler:["Pause","Skip the “"+detail+"”. Silence sounds confident.","amber"],
+    hedge:["Own it", rw?`“${detail}” → “${rw}”`:`Drop “${detail}”. State it.`,"amber"],
+    weak:["Drop “"+detail+"”","It shrinks your message.","amber"],
+    fast:["Slow down",`${detail} wpm. Aim for 140–160.`,"red"],
+    slow:["Lift the energy",`${detail} wpm. Keep the momentum.`,"amber"],
+    long:["Land your point","Summarise in one sentence, then stop.","red"],
+    uptalk:["Finish going down","Your statements are rising like questions.","amber"],
+    good:["Strong delivery","Clean and confident. Keep going.","good"],
+  }[type];
+  $("#mdot").className="mdot "+(C[2]==="good"?"":C[2]); $("#mdot").textContent=C[2]==="red"?"!":C[2]==="good"?"★":"•";
+  $("#mcue").className="mcue "+C[2]; $("#mcue").textContent=C[0]; $("#msub").textContent=C[1];
+  M.cueUntil=now+5;
+  if(type!=="good" && M.m.vibrate && navigator.vibrate){ try{ navigator.vibrate(C[2]==="red"?[70,60,70]:60); }catch(e){} }
+}
+
+async function endMeeting(){
+  const M=MTG; if(!M||M.ending) return; M.ending=true;
+  clearInterval(M.tick); document.removeEventListener("visibilitychange",onMeetingVisibility);
+  $("#mcue").textContent="Preparing your debrief…"; $("#msub").textContent="";
+  const rec=await M.rec.stop();
+  try{ M.wl&&M.wl.release(); }catch(e){}
+  if(M.inTurn) M.longest=Math.max(M.longest,M.lastV-M.turnStart);
+  $("#mlive").remove(); MTG=null;
+  renderMeetingReport(M,rec);
+}
+function renderMeetingReport(M,rec){
+  const el=$("#tab-meeting"), m=M.m;
+  const item={drill:"meeting",title:"Meeting: "+(m.name||"Untitled"),prompt:m.key||"Live meeting",ctx:m.points.trim()?"Planned talking points: "+m.points.split("\n").filter(x=>x.trim()).join("; "):""};
+  const R=scoreTake(item,rec), fb=buildFeedback(item,R);
+  if(R.A.words>=3){
+    if(M.longest>120) fb.push(["fix",`Your longest uninterrupted turn was ${fmtTime(M.longest)}. Executives make their point in 60–90 seconds, then invite a response.`]);
+    else if(M.longest>10) fb.push(["good",`Your longest turn was ${fmtTime(M.longest)}. Concise turns keep the room engaged.`]);
+    if(m.key){ const kw=tokenize(m.key).map(t=>t.n).filter(w=>w.length>4); const said=new Set(R.A.toks.map(t=>t.n)); const hit=kw.filter(w=>said.has(w)).length;
+      if(kw.length) fb.push(hit/kw.length>=0.5?["good","You delivered your key message."]:["fix","Your key message didn't come through clearly. Say it early, in one sentence, word for word."]); }
+  }
+  const swaps={}; for(const c of ["hedge","weak"]) for(const [p,n] of Object.entries(R.A.hits[c])) if(REWRITE[p]!==undefined) swaps[p]=(swaps[p]||0)+n;
+  const take={id:Date.now()+"-m",date:dayKey(),ts:Date.now(),drill:"meeting",title:item.title,prompt:item.prompt,transcript:rec.transcript.length>20000?rec.transcript.slice(0,20000)+" …[history copy shortened]":rec.transcript,metrics:Object.assign(R.m,{talkTime:Math.round(M.talk),longestTurn:Math.round(M.longest),cues:M.counts}),scores:R.sc,overall:R.overall,feedback:fb.map(f=>f[1].replace(/<[^>]+>/g,"")),session:false};
+  if(R.A.words>=3){ S.takes.push(take); const d=S.days[take.date]||(S.days[take.date]={minutes:0,completed:false}); d.minutes=+(d.minutes+M.talk/60).toFixed(2); save(); }
+  const cueRows=Object.entries(M.counts).map(([k,v])=>`<span class="chip"><b>${v}</b>${CUE_LABEL[k]||k}</span>`).join("");
+  el.innerHTML=`<h1>Meeting debrief</h1><p class="sub">${esc(item.title)} · ${fmtTime(rec.duration)} long · you spoke for about ${fmtTime(M.talk)}</p>
+  <div class="card hi"><div class="row" style="gap:22px;align-items:flex-start">${ring(R.overall)}<div class="dims">${Object.keys(DIMS).map(k=>`<div class="dim"><div class="label">${DIMS[k].name}</div><div class="n" style="color:${scoreColor(R.sc[k])}">${R.sc[k]??"–"}</div></div>`).join("")}</div></div>
+   <div class="chips" style="margin-top:14px"><span class="chip"><b>${R.m.wpm}</b>wpm</span><span class="chip"><b>${R.m.words}</b>words</span><span class="chip"><b>${R.m.fillerRate}</b>fillers/100 words</span><span class="chip"><b>${R.m.hedges}</b>hedges</span><span class="chip"><b>${fmtTime(M.longest)}</b>longest turn</span>${R.m.uptalk!=null?`<span class="chip"><b>${R.m.uptalk}%</b>rising endings</span>`:""}</div>
+   ${cueRows?`<p class="small muted" style="margin:14px 0 4px">Live cues you received</p><div class="chips" style="margin-top:0">${cueRows}</div>`:""}
+  </div>
+  <div class="card" style="margin-top:16px"><h3>Coach feedback</h3><ul class="fb">${fb.map(([t,x])=>`<li class="${t}">${x}</li>`).join("")}</ul>
+   ${Object.keys(swaps).length?`<h3 style="margin-top:18px">Say this instead next time</h3><table class="phr"><tr><th>You said</th><th>CEO version</th></tr>${Object.entries(swaps).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([p,n])=>`<tr><td>“${esc(p)}” ×${n}</td><td>${REWRITE[p]?"“"+esc(REWRITE[p])+"”":"(delete it)"}</td></tr>`).join("")}</table>`:""}
+   ${R.A.words?`<details style="margin-top:16px"><summary>Full transcript with corrections</summary><div class="legend" style="margin-top:8px"><span><i style="background:#ffb3ae"></i>filler</span><span><i style="background:#ffe2a0"></i>hedge</span><span><i style="background:#ffcf9a"></i>weak word</span><span><i style="background:#9df0c8"></i>power language</span></div><div class="tx">${renderTranscript(R,item)}</div></details>`:""}
+   ${rec.audioUrl?`<h3 style="margin-top:18px">Listen back</h3><audio controls src="${rec.audioUrl}" style="width:100%"></audio>`:""}
+   <div id="maibox" style="margin-top:16px"></div>
+   <div class="row" style="margin-top:16px">${S.profile.apiKey&&R.A.words>=3?'<button class="btn" id="maib">🤖 AI meeting debrief</button>':""}<button class="btn primary" id="mback">Done</button></div></div>`;
+  $("#mback").onclick=()=>tabs.meeting();
+  if($("#maib")) $("#maib").onclick=async(e)=>{ e.target.disabled=true; e.target.textContent="Thinking…"; try{ $("#maibox").innerHTML=renderAI(await aiCoach(item,{...take,transcript:rec.transcript})); e.target.remove(); }catch(err){ $("#maibox").innerHTML=`<div class="banner warn">${esc(err.message)}</div>`; e.target.disabled=false; e.target.textContent="🤖 AI meeting debrief"; } };
+  window.scrollTo(0,0);
+}
 
 /* ---- Free practice ---- */
 tabs.practice=function(){
@@ -1013,7 +1245,7 @@ tabs.library=function(){
 /* ---- Settings ---- */
 tabs.settings=function(){
   const p=S.profile;
-  $("#tab-settings").innerHTML=`<h1>Settings</h1><p class="sub">Everything is stored privately in this browser on this computer.</p>
+  $("#tab-settings").innerHTML=`<h1>Settings</h1><p class="sub">Everything is stored privately in this browser on this device.</p>
   <div class="grid g2">
   <div class="card"><h2>Profile</h2>
     <label class="f"><span>Your name</span><input id="sName" value="${esc(p.name)}" placeholder="e.g. Iqbal"></label>
@@ -1025,6 +1257,9 @@ tabs.settings=function(){
     <label class="f"><span>Anthropic API key</span><input id="sKey" type="password" value="${esc(p.apiKey)}" placeholder="sk-ant-…"></label>
     <button class="btn" id="sKeySave">Save key</button> <span id="sKeyOk" class="small muted"></span>
   </div>
+  <div class="card"><h2>📱 Use it on your phone</h2><p class="small">Open <a href="${APP_URL}" target="_blank" rel="noopener">${APP_URL.replace("https://","")}</a> on your phone, then:</p>
+    <ul class="small" style="padding-left:18px;margin:0 0 8px"><li><b>iPhone (Safari):</b> Share → <b>Add to Home Screen</b></li><li><b>Android (Chrome):</b> ⋮ menu → <b>Install app</b> / Add to Home screen</li></ul>
+    <p class="small muted" style="margin:0">Progress is stored separately on each device. Use Export/Import below to move it.</p></div>
   <div class="card"><h2>Microphone test</h2><p class="small muted">Speak and check that the bar moves.</p><div class="meter" style="width:100%"><i id="mt"></i></div><button class="btn" id="mtb" style="margin-top:12px">Test microphone</button></div>
   <div class="card"><h2>Backup</h2><p class="small muted">Export your history to a file, or restore it on another computer.</p>
     <div class="row"><button class="btn" id="exp">⬇ Export progress</button><label class="btn" style="display:inline-block">⬆ Import<input type="file" id="imp" accept=".json" class="hidden"></label><button class="btn danger" id="rst">Reset all data</button></div></div>
@@ -1038,8 +1273,9 @@ tabs.settings=function(){
 };
 
 /* expose internals for testing */
-window.AC={analyzeText,ceoRewrite,alignWords,analyzeAudio,scoreTake,buildFeedback,dailyPlan,weeklyReport,detectPitch};
+window.AC={cue,meetingText,meetingFrame,analyzeText,ceoRewrite,alignWords,analyzeAudio,scoreTake,buildFeedback,dailyPlan,weeklyReport,detectPitch};
 supportBanner(); show("home");
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
 </script>
 </body>
 </html>

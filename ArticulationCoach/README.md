@@ -1,13 +1,46 @@
 # Articulation Coach: speak like a CEO
 
-A personal speaking coach that **listens to you**, gives **instant feedback and corrections**, runs a **15-minute daily session** of varied exercises, and **tracks your progress week by week**.
+A personal speaking coach that **listens to you**, gives **instant feedback and corrections**, runs a **15-minute daily session** of varied exercises, **coaches you live during real meetings**, and **tracks your progress week by week**. It works on computers and phones.
 
 It is a single offline app (`index.html`). There is nothing to install and no account to create, and all your data stays on your computer.
 
-## Put it on your desktop (one time)
+## Use it on your phone
+
+Open **https://iqbalbut.github.io/StockSoft/** on your phone, then add it to your home screen:
+
+- **iPhone (Safari):** Share → **Add to Home Screen**
+- **Android (Chrome):** ⋮ menu → **Install app** (or Add to Home screen)
+
+It opens full screen like a normal app. Progress is stored separately on each device; use **Settings → Export / Import** to move it.
+
+> The web address only works after GitHub Pages is switched on, which is a one-time step: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+## Meeting Mode: live coaching while you talk
+
+1. **Prepare (optional):** enter your key message, talking points and your ask, then rehearse them out loud once.
+2. **Start live coaching** when the meeting begins. Put the phone face-up in front of you; the screen stays on.
+3. The coach shows **silent cues** on a large, glanceable screen, and on Android phones it can vibrate:
+   - **Pause:** you used a filler word
+   - **Own it:** you hedged ("I think", "maybe"), with a stronger phrase to use instead
+   - **Drop "sorry" / "just":** weak words
+   - **Slow down / Lift the energy:** your pace over the last 30 seconds is outside the executive range
+   - **Finish going down:** your statements keep rising like questions
+   - **Land your point:** you have been talking continuously for too long (you choose the limit)
+4. Your key message and talking points can stay on screen as a discreet cheat card.
+5. **End** the session to get a debrief: scores, filler and hedge rates, longest turn, the cues you received, a "say this instead" table, and the full transcript with corrections. Meetings count toward your weekly report.
+
+Tips:
+- For **video calls**, run the call on your laptop and the coach on your phone beside it, because many phones give the microphone to one app at a time.
+- The coach hears everyone near the microphone, so sit closest to the phone or use a headset for the most accurate results.
+- Keep the app on screen. Phones pause the microphone when you switch apps or lock the screen.
+- Saving meeting audio is off by default. Get consent before you record other people.
+
+## Put it on your computer desktop (one time)
 
 1. Download this folder. On GitHub: **Code → Download ZIP**, then unzip it somewhere permanent, such as `Documents\ArticulationCoach`.
-2. Install **Google Chrome** or **Microsoft Edge**. Live speech recognition only works in these two browsers.
+2. Install **Google Chrome** or **Microsoft Edge**. On computers, live speech recognition only works in these two browsers.
+
+   Alternatively, open the web address above in Chrome or Edge and choose **Install app** from the address bar or menu.
 3. Run the installer:
    - **Windows:** double-click `Install on Desktop (Windows).bat`.
    - **Mac:** right-click `Install on Desktop (Mac).command` → **Open**.
