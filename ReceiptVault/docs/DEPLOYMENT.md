@@ -65,6 +65,20 @@ Polling runs every `INGEST_POLL_MINUTES` (default 10); Settings → *Check Gmail
 
 `sourceRef` makes retries idempotent. An n8n flow *WhatsApp Trigger → Download media → HTTP Request* gives you forward-to-bot intake without changing this app. Multipart (`files[]`) is accepted too, so Postmark/Mailgun inbound webhooks can post attachments directly.
 
+## Weekly digest and bill reminders
+
+- Email: set `SMTP_URL` and `MAIL_FROM`. For Gmail use an app password: `smtps://you%40gmail.com:APP_PASSWORD@smtp.gmail.com:465`.
+- Schedule: the digest goes out Mondays at 09:00 and reminders daily at 09:00 in the time zone set in Settings (default Asia/Karachi). Reminders cover unpaid bills due within N days (default 3) and overdue ones, once per bill per day.
+- Settings → *Preview this week* / *Send now* to check it.
+
+## Outgoing webhooks: digest on WhatsApp, Slack, Sheets…
+
+Settings → *Outgoing webhooks* → paste an n8n Webhook-node URL and pick events. The secret is shown once.
+
+Each request has headers `x-receiptvault-event`, `x-receiptvault-delivery` (unique id, for de-duplication), `x-receiptvault-timestamp` and `x-receiptvault-signature: sha256=<hex>`, where the hex is HMAC-SHA256 of `"<timestamp>.<raw body>"` with your secret. Verify it in n8n with a *Crypto* node (HMAC, SHA256, hex) and an *IF* node, and reject timestamps older than 5 minutes. Failed deliveries (non-2xx) retry with backoff for about an hour.
+
+WhatsApp digest: *Webhook* (event `digest.weekly`) → *WhatsApp Business Cloud: Send message* with `{{$json.data.text}}` as the body. Bill reminders work the same way with `bill.due_soon`.
+
 ## Security checklist
 
 - HTTPS only (HSTS header is sent). Sessions are HTTP-only cookies; login and 2FA are rate-limited.

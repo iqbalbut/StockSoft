@@ -7,5 +7,5 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
   const user = await pageUser();
   const doc = await getDocument((await params).id);
   if (!doc) notFound();
-  return <DocumentDetail initial={JSON.parse(JSON.stringify(doc))} readOnly={user.role !== "owner"} />;
+  return <DocumentDetail key={String(doc.updatedAt)} initial={JSON.parse(JSON.stringify(doc))} readOnly={user.role !== "owner"} />;
 }

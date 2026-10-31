@@ -34,6 +34,12 @@ export default async function Dashboard() {
         <Link href="/settings" className="btn btn-ghost md:hidden" aria-label="Settings">⚙︎</Link>
       </div>
 
+      <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 text-sm md:hidden">
+        {[["/payables", "Bills"], ["/clients", "Clients"], ["/rules", "Rules"], ["/ledger", "Ledger"], ["/documents", "Records"]].map(([href, label]) => (
+          <Link key={href} href={href} className="card shrink-0 px-4 py-2 font-medium">{label}</Link>
+        ))}
+      </nav>
+
       {review > 0 && (
         <Link href="/review" className="card flex items-center justify-between border-amber-500/40 bg-amber-500/10 p-4">
           <div>
@@ -61,7 +67,7 @@ export default async function Dashboard() {
           {s.byMonth.length ? s.byMonth.map((m) => <Bar key={m.month} label={m.month} value={m.usd} max={monthMax} />) : <p className="text-sm muted">No approved expenses yet.</p>}
         </section>
         <section className="card p-4">
-          <h2 className="font-semibold">Bills due</h2>
+          <div className="flex items-center justify-between"><h2 className="font-semibold">Bills due</h2><Link href="/payables" className="text-sm muted underline">All</Link></div>
           {s.payables.length ? (
             <ul className="mt-2 divide-y line text-sm">
               {s.payables.map((p) => (

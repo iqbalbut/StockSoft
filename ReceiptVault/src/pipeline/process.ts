@@ -3,12 +3,15 @@ import { getDb, schema } from "@/db";
 import { getObject } from "@/lib/storage";
 import { audit } from "@/lib/audit";
 import { getSettings } from "@/lib/settings";
-import { extractDocument, PermanentExtractionError } from "@/extraction/extract";
+import { extractDocument, PermanentExtractionError, type ExtractionResult } from "@/extraction/extract";
 import type { Extraction } from "@/extraction/schema";
 import { decideRoute } from "./route";
 import { findDuplicate } from "./duplicates";
 import { defaultFxProvider, toUsd, type FxProvider, type FxQuote } from "./fx";
 import { normalizeVendor, archivedName, extForMime } from "./naming";
+import { matchClient } from "./clients";
+import { syncLedger } from "./ledger";
+import { emit } from "./events";
 
 const num = (v: number | null) => (v == null ? null : String(v));
 
@@ -32,21 +35,34 @@ async function resolveVendor(x: Extraction) {
   return created ?? (await db.query.vendors.findFirst({ where: eq(schema.vendors.normalizedName, key) }))!;
 }
 
-/** Extract → apply vendor rules → convert currency → check duplicates → route. */
-export async function processDocument(documentId: string, deps: { fx?: FxProvider } = {}) {
+export async function loadPages(documentId: string) {
+  const db = await getDb();
+  const files = await db.query.documentFiles.findMany({
+    where: eq(schema.documentFiles.documentId, documentId),
+    orderBy: asc(schema.documentFiles.pageNo),
+  });
+  return Promise.all(files.map(async (f) => ({ mimeType: f.mimeType, data: await getObject(f.storageKey) })));
+}
+
+type Deps = { fx?: FxProvider };
+
+/** Real-time path: extract now, then apply. */
+export async function processDocument(documentId: string, deps: Deps = {}) {
   const db = await getDb();
   const doc = await db.query.documents.findFirst({ where: eq(schema.documents.id, documentId) });
   if (!doc) throw new PermanentExtractionError(`Document ${documentId} not found`);
   if (!["queued", "processing", "failed"].includes(doc.status)) return doc.status; // already handled
 
   await db.update(schema.documents).set({ status: "processing", updatedAt: new Date() }).where(eq(schema.documents.id, documentId));
-  const files = await db.query.documentFiles.findMany({
-    where: eq(schema.documentFiles.documentId, documentId),
-    orderBy: asc(schema.documentFiles.pageNo),
-  });
-  const pages = await Promise.all(files.map(async (f) => ({ mimeType: f.mimeType, data: await getObject(f.storageKey) })));
+  const result = await extractDocument(await loadPages(documentId), { filename: doc.originalFilename });
+  return applyExtraction(documentId, result, deps);
+}
 
-  const result = await extractDocument(pages, { filename: doc.originalFilename });
+/** Apply vendor rules → match client → convert currency → check duplicates → route → post. */
+export async function applyExtraction(documentId: string, result: ExtractionResult, deps: Deps = {}) {
+  const db = await getDb();
+  const doc = (await db.query.documents.findFirst({ where: eq(schema.documents.id, documentId) }))!;
+  const files = await db.query.documentFiles.findMany({ where: eq(schema.documentFiles.documentId, documentId), orderBy: asc(schema.documentFiles.pageNo) });
   const x = result.extraction;
   const settings = await getSettings();
   const confidence: Record<string, number> = { ...x.confidence };
@@ -66,7 +82,17 @@ export async function processDocument(documentId: string, deps: { fx?: FxProvide
     isBusiness = vendor.defaultIsBusiness;
     confidence.is_business = 1;
   }
-  if (vendor?.defaultClientId) clientId = vendor.defaultClientId;
+  let isBillable = x.is_billable;
+  if (vendor?.defaultIsBillable != null) {
+    isBillable = vendor.defaultIsBillable;
+    confidence.is_billable = 1;
+  }
+  // Client: the vendor's default client, else the client/project reference printed on the document.
+  clientId = vendor?.defaultClientId ?? null;
+  if (!clientId && x.client_reference) {
+    const clients = await db.query.clients.findMany({ columns: { id: true, name: true, code: true } });
+    clientId = matchClient(x.client_reference, clients)?.id ?? null;
+  }
 
   // Historical FX on the transaction date; original amounts are always kept.
   let fx: FxQuote | null = null;
@@ -90,7 +116,7 @@ export async function processDocument(documentId: string, deps: { fx?: FxProvide
     settings,
   );
 
-  const decision = decideRoute({ extraction: { ...x, category, is_business: isBusiness }, confidence, totalUsd, duplicateOf, settings });
+  const decision = decideRoute({ extraction: { ...x, category, is_business: isBusiness, is_billable: isBillable }, confidence, totalUsd, duplicateOf, settings });
   const fields = {
     docType: x.document_type,
     vendorId: vendor?.id ?? null,
@@ -108,7 +134,7 @@ export async function processDocument(documentId: string, deps: { fx?: FxProvide
     cardLast4: x.card_last4,
     category,
     isBusiness,
-    isBillable: x.is_billable,
+    isBillable,
     clientRef: x.client_reference,
     clientId,
     language: x.language,
@@ -129,7 +155,7 @@ export async function processDocument(documentId: string, deps: { fx?: FxProvide
         overallConfidence: decision.overall,
         duplicateOfId: duplicateOf,
         rawExtraction: x,
-        extractionModel: result.model,
+        extractionModel: result.viaBatch ? `${result.model} (batch)` : result.model,
         error: null,
         archivedFilename: archivedName({ docDate: x.document_date, vendorName: x.vendor_name, total: x.total, currency: x.currency }, extForMime(files[0]?.mimeType ?? "")),
         retainUntil: retainUntil(x.document_date, settings.retentionYears),
@@ -164,6 +190,10 @@ export async function processDocument(documentId: string, deps: { fx?: FxProvide
     reasons: decision.reasons,
     threshold: settings.autoApproveConfidence,
   });
+  if (decision.status === "approved") await syncLedger(documentId);
+  await emit("document.processed", { id: documentId, status: decision.status, reasons: decision.reasons, vendor: x.vendor_name, total: x.total, currency: x.currency, totalUsd });
+  if (decision.status === "approved") await emit("document.approved", { id: documentId, auto: true, vendor: x.vendor_name, total: x.total, currency: x.currency, totalUsd });
+  if (decision.status === "needs_review") await emit("document.needs_review", { id: documentId, reasons: decision.reasons, vendor: x.vendor_name });
   return decision.status;
 }
 

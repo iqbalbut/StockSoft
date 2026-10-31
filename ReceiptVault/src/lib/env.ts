@@ -37,6 +37,12 @@ const schema = z.object({
   DRIVE_FOLDER_ID: z.string().optional(),
   INGEST_POLL_MINUTES: z.coerce.number().int().min(1).default(10),
 
+  // smtp://user:pass@smtp.example.com:587 (or smtps://…:465). Empty = digest/reminder emails are skipped.
+  SMTP_URL: z.string().optional(),
+  MAIL_FROM: z.string().default("ReceiptVault <receipts@localhost>"),
+  // Economy mode: submit backlog extraction through the Message Batches API (50% cheaper, slower).
+  BATCH_POLL_SECONDS: z.coerce.number().int().min(30).default(120),
+
   FX_API_BASE: z.string().default("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api"),
 });
 

@@ -116,3 +116,46 @@ export function PollNow() {
     </div>
   );
 }
+
+export function NotificationSettings({ initial, readOnly }: { initial: AppSettings; readOnly: boolean }) {
+  const [s, setS] = useState(initial);
+  const [msg, setMsg] = useState("");
+  async function save() {
+    const { accountingBasis, digestEmail, digestEnabled, timeZone, reminderDaysBefore } = s;
+    const res = await fetch("/api/settings", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ accountingBasis, digestEmail, digestEnabled, timeZone, reminderDaysBefore }) });
+    const data = await res.json();
+    setMsg(res.ok ? "Saved" : data.issues?.[0]?.message ?? data.error);
+  }
+  return (
+    <div className="space-y-2 text-sm">
+      <label className="block">
+        <span className="muted">Accounting basis</span>
+        <select className="input mt-1" disabled={readOnly} value={s.accountingBasis} onChange={(e) => setS({ ...s, accountingBasis: e.target.value as AppSettings["accountingBasis"] })}>
+          <option value="cash">Cash: bills and invoices count when paid (most small LLCs)</option>
+          <option value="accrual">Accrual: count on the bill/invoice date</option>
+        </select>
+        <span className="text-xs muted">Applies to postings from now on; ask your CPA before switching mid-year.</span>
+      </label>
+      <label className="block">
+        <span className="muted">Digest & reminder email (blank = your login email)</span>
+        <input className="input mt-1" type="email" disabled={readOnly} value={s.digestEmail} onChange={(e) => setS({ ...s, digestEmail: e.target.value })} />
+      </label>
+      <label className="flex items-center gap-2">
+        <input type="checkbox" className="h-5 w-5" disabled={readOnly} checked={s.digestEnabled} onChange={(e) => setS({ ...s, digestEnabled: e.target.checked })} />
+        Send the weekly digest (Mondays 09:00)
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block">
+          <span className="muted">Time zone</span>
+          <input className="input mt-1" disabled={readOnly} value={s.timeZone} onChange={(e) => setS({ ...s, timeZone: e.target.value })} />
+        </label>
+        <label className="block">
+          <span className="muted">Remind days before due</span>
+          <input className="input mt-1" type="number" disabled={readOnly} value={s.reminderDaysBefore} onChange={(e) => setS({ ...s, reminderDaysBefore: Number(e.target.value) })} />
+        </label>
+      </div>
+      {!readOnly && <button className="btn btn-primary" onClick={save}>Save</button>}
+      {msg && <span className="ml-3 muted">{msg}</span>}
+    </div>
+  );
+}

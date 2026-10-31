@@ -12,6 +12,15 @@ export type AppSettings = {
   duplicateDayWindow: number;
   duplicateAmountTolerancePct: number;
   companyName: string;
+  /** cash: bills/invoices hit the ledger when paid (typical for a small LLC); accrual: on the document date. */
+  accountingBasis: "cash" | "accrual";
+  /** Weekly digest recipient (empty = owner's login email). */
+  digestEmail: string;
+  digestEnabled: boolean;
+  /** Monday 09:00 in this time zone. */
+  timeZone: string;
+  /** Remind about unpaid bills this many days before they're due (and daily once overdue). */
+  reminderDaysBefore: number;
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -21,6 +30,11 @@ export const DEFAULT_SETTINGS: AppSettings = {
   duplicateDayWindow: 3,
   duplicateAmountTolerancePct: 1,
   companyName: "AiNetworks LLC",
+  accountingBasis: "cash",
+  digestEmail: "",
+  digestEnabled: true,
+  timeZone: "Asia/Karachi",
+  reminderDaysBefore: 3,
 };
 
 export async function getSettings(): Promise<AppSettings> {

@@ -13,6 +13,7 @@ import {
   uniqueIndex,
   primaryKey,
   bigserial,
+  bigint,
 } from "drizzle-orm/pg-core";
 
 // Money columns are numeric(18,4) and surface as strings in JS so we never lose precision.
@@ -64,6 +65,7 @@ export const vendors = pgTable(
     defaultCategory: text("default_category"),
     defaultIsBusiness: boolean("default_is_business"),
     defaultClientId: uuid("default_client_id").references(() => clients.id),
+    defaultIsBillable: boolean("default_is_billable"),
     createdAt: ts("created_at").notNull().defaultNow(),
   },
   (t) => [uniqueIndex("vendors_normalized_name_idx").on(t.normalizedName)],
@@ -139,6 +141,17 @@ export const documents = pgTable(
     rawExtraction: jsonb("raw_extraction"),
     extractionModel: text("extraction_model"),
     error: text("error"),
+
+    // Payment tracking for vendor bills (payables) and sales invoices (receivables).
+    paidAt: date("paid_at"),
+    paidAmount: money("paid_amount"),
+    paymentRef: text("payment_ref"),
+    remindedAt: ts("reminded_at"),
+    // Billable expense re-invoiced to the client (Phase 3 links the invoice).
+    rebilledAt: date("rebilled_at"),
+    // Economy (Message Batches API) extraction.
+    economy: boolean("economy").notNull().default(false),
+    aiBatchId: uuid("ai_batch_id"),
 
     approvedBy: uuid("approved_by").references(() => users.id),
     approvedAt: ts("approved_at"),
@@ -241,4 +254,56 @@ export const ingestState = pgTable("ingest_state", {
   cursor: text("cursor"),
   lastRunAt: ts("last_run_at"),
   lastError: text("last_error"),
+});
+
+/**
+ * Single-entry ledger of approved business transactions. Postings are never edited: a change to an
+ * approved document reverses the old entry and posts a new one, so history stays reconstructable.
+ */
+export const ledgerEntries = pgTable(
+  "ledger_entries",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    documentId: uuid("document_id")
+      .notNull()
+      .references(() => documents.id),
+    entryDate: date("entry_date").notNull(),
+    kind: text("kind", { enum: ["expense", "revenue"] }).notNull(),
+    category: text("category").notNull(),
+    description: text("description").notNull(),
+    amount: money("amount").notNull(), // original currency; negative for reversals
+    currency: text("currency").notNull(),
+    amountUsd: money("amount_usd"),
+    fxRate: numeric("fx_rate", { precision: 20, scale: 10 }),
+    taxAmount: money("tax_amount"),
+    isBillable: boolean("is_billable").notNull().default(false),
+    clientId: uuid("client_id").references(() => clients.id),
+    reversalOf: bigint("reversal_of", { mode: "number" }),
+    reversed: boolean("reversed").notNull().default(false),
+    createdBy: text("created_by"),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("ledger_doc_idx").on(t.documentId), index("ledger_date_idx").on(t.entryDate)],
+);
+
+/** Outbound webhooks (n8n, Zapier): signed with HMAC-SHA256. */
+export const webhookEndpoints = pgTable("webhook_endpoints", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  url: text("url").notNull(),
+  secret: text("secret").notNull(),
+  events: jsonb("events").$type<string[]>().notNull(),
+  active: boolean("active").notNull().default(true),
+  lastStatus: text("last_status"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+/** Anthropic Message Batches submitted for economy extraction. */
+export const aiBatches = pgTable("ai_batches", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  anthropicId: text("anthropic_id"),
+  documentIds: jsonb("document_ids").$type<string[]>().notNull(),
+  status: text("status", { enum: ["submitted", "ended", "failed"] }).notNull().default("submitted"),
+  error: text("error"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  endedAt: ts("ended_at"),
 });

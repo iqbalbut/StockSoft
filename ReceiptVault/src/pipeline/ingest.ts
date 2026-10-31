@@ -82,6 +82,8 @@ export async function ingest(opts: {
   asPages?: boolean;
   batchId?: string | null;
   sourceRef?: string | null;
+  /** Extract through the Message Batches API (half price, results within ~1 h). */
+  economy?: boolean;
 }): Promise<IngestResult> {
   const db = await getDb();
   const { ok, rejected } = await expand(opts.files);
@@ -119,6 +121,7 @@ export async function ingest(opts: {
         status: exact ? "duplicate" : "queued",
         duplicateOfId: exact?.id ?? null,
         reviewReasons: exact ? ["duplicate_suspected"] : [],
+        economy: Boolean(opts.economy),
       })
       .returning({ id: schema.documents.id });
 
@@ -141,8 +144,12 @@ export async function ingest(opts: {
       pages: group.length,
       ...(exact ? { exactDuplicateOf: exact.id } : {}),
     });
-    if (!exact) await enqueue("process_document", { documentId: doc.id });
+    if (!exact && !opts.economy) await enqueue("process_document", { documentId: doc.id });
     result.documents.push({ id: doc.id, filename: first.name, status: exact ? "duplicate" : "queued", duplicateOf: exact?.id });
+  }
+  // Economy: one submission shortly after the last file of this upload arrives (later chunks join it).
+  if (opts.economy && result.documents.some((d) => d.status === "queued")) {
+    await enqueue("submit_ai_batch", { batchId: opts.batchId ?? null }, { runAt: new Date(Date.now() + 45_000), maxAttempts: 3 });
   }
   return result;
 }

@@ -5,7 +5,7 @@ Expect about **60–90 minutes for 200 paper receipts**, most of it photographin
 ## 0. Before you start (5 min, once)
 - Settings → check the rules. For an old backlog, a **$500 review limit** and **90% confidence** are sensible. Raise the confidence to 95% for the first batch if you want to see more of the AI's work.
 - Sort the pile roughly by year if you can (helps you spot gaps); don't bother sorting by type.
-- Cost check: roughly **$0.03–0.08 per document** with the default model and effort (an estimate, not yet measured; the first `npm run eval:extraction` prints real token usage). Budget about **$6–16 for 200**.
+- Cost check: roughly **$0.03–0.08 per document** with the default model and effort (an estimate, not yet measured; the first `npm run eval:extraction` prints real token usage). Budget about **$6–16 for 200**, or roughly half that with Economy mode.
 
 ## 1. Paper receipts: phone, Batch mode (40–60 min)
 1. Open the app → **Capture** → **Batch: 1 photo = 1 receipt**.
@@ -14,8 +14,9 @@ Expect about **60–90 minutes for 200 paper receipts**, most of it photographin
 4. Long receipts or multi-page bills: switch to **Multi-page document**, snap each part, tap **Done**.
 5. Crumpled thermal slips: flatten under a book for a minute; tilt slightly to kill glare.
 
-## 2. Digital files: one ZIP (5 min)
+## 2. Digital files: one ZIP (5 min, and half price)
 - Download every PDF/receipt from email, Drive, airline/hotel sites, Careem/Uber, into one folder → zip it → **Upload** → drop the ZIP → name the batch (e.g. "2025 backlog") → **Upload and process**.
+- Tick **Economy mode** for anything that isn't urgent: extraction goes through the Message Batches API at **half the AI cost**, and results arrive within about an hour (24 h at most) instead of seconds. Anything the batch can't finish cleanly is retried in real time automatically.
 - The progress panel shows *Uploaded*, *Processed by AI*, and the split auto-filed / to review / failed. You can close the page; processing continues on the server.
 - Exact re-uploads are skipped instantly (same file hash) and never billed twice.
 

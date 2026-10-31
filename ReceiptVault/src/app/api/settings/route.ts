@@ -13,6 +13,18 @@ const Patch = z
     duplicateDayWindow: z.number().int().min(0).max(30),
     duplicateAmountTolerancePct: z.number().min(0).max(10),
     companyName: z.string().min(1).max(120),
+    accountingBasis: z.enum(["cash", "accrual"]),
+    digestEmail: z.union([z.email(), z.literal("")]),
+    digestEnabled: z.boolean(),
+    timeZone: z.string().refine((tz) => {
+      try {
+        new Intl.DateTimeFormat("en-US", { timeZone: tz });
+        return true;
+      } catch {
+        return false;
+      }
+    }, "Unknown time zone"),
+    reminderDaysBefore: z.number().int().min(0).max(30),
   })
   .partial()
   .strict();

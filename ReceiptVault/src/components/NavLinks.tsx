@@ -10,13 +10,21 @@ const ITEMS = [
   { href: "/upload", label: "Upload", icon: "M12 16V4m0 0-4 4m4-4 4 4M4 16v4h16v-4" },
 ];
 
+export const MORE = [
+  { href: "/payables", label: "Bills", icon: "" },
+  { href: "/clients", label: "Clients", icon: "" },
+  { href: "/rules", label: "Rules", icon: "" },
+  { href: "/ledger", label: "Ledger", icon: "" },
+  { href: "/settings", label: "Settings", icon: "" },
+];
+
 export function NavLinks({ reviewCount, variant }: { reviewCount: number; variant: "top" | "bottom" }) {
   const path = usePathname();
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
   if (variant === "top") {
     return (
       <>
-        {[...ITEMS, { href: "/settings", label: "Settings", icon: "" }].map((i) => (
+        {[...ITEMS, ...MORE].map((i) => (
           <Link key={i.href} href={i.href} className={`rounded-lg px-3 py-1.5 ${active(i.href) ? "bg-brand-500/10 text-brand-600 dark:text-brand-100" : "muted hover:text-[var(--ink)]"}`}>
             {i.label}
             {i.href === "/review" && reviewCount > 0 && <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-xs text-white">{reviewCount}</span>}

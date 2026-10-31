@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, lte, sql, desc, asc, ne } from "drizzle-orm";
+import { and, eq, gte, inArray, lte, sql, desc, asc, ne, isNull } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 
 const d = schema.documents;
@@ -43,9 +43,8 @@ export async function dashboardStats(year = new Date().getFullYear()) {
     .orderBy(desc(usd))
     .limit(8);
 
-  const today = new Date().toISOString().slice(0, 10);
   const payables = await db.query.documents.findMany({
-    where: and(eq(d.docType, "vendor_bill"), inArray(d.status, ["approved", "needs_review"]), gte(d.dueDate, today)),
+    where: and(eq(d.docType, "vendor_bill"), inArray(d.status, ["approved", "needs_review"]), isNull(d.paidAt)),
     orderBy: asc(d.dueDate),
     limit: 6,
   });

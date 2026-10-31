@@ -1,7 +1,7 @@
 import { sql, eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 
-export type JobType = "process_document" | "poll_gmail" | "poll_drive";
+export type JobType = "process_document" | "poll_gmail" | "poll_drive" | "deliver_webhook" | "send_digest" | "send_reminders" | "submit_ai_batch" | "poll_ai_batch";
 export type Job = typeof schema.jobs.$inferSelect;
 
 export async function enqueue(type: JobType, payload: Record<string, unknown>, opts: { runAt?: Date; maxAttempts?: number } = {}) {

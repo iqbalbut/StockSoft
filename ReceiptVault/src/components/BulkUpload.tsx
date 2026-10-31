@@ -35,6 +35,7 @@ export function BulkUpload() {
   const [batchId, setBatchId] = useState<string | null>(null);
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
   const [error, setError] = useState("");
+  const [economy, setEconomy] = useState(false);
 
   useEffect(() => {
     if (!batchId) return;
@@ -56,6 +57,7 @@ export function BulkUpload() {
       const form = new FormData();
       part.forEach((f) => form.append("files", f, f.name));
       form.append("source", "upload");
+      if (economy) form.append("economy", "1");
       if (id) form.append("batchId", id);
       else form.append("batchName", batchName);
       const res = await fetch("/api/upload", { method: "POST", body: form });
@@ -106,6 +108,13 @@ export function BulkUpload() {
           <label className="block text-sm">
             <span className="muted">Batch name (for tracking this backlog session)</span>
             <input className="input mt-1" value={batchName} onChange={(e) => setBatchName(e.target.value)} disabled={!!batchId} />
+          </label>
+          <label className="flex items-start gap-3 rounded-lg bg-black/5 p-3 text-sm dark:bg-white/5">
+            <input type="checkbox" className="mt-1 h-5 w-5" checked={economy} onChange={(e) => setEconomy(e.target.checked)} disabled={!!batchId} />
+            <span>
+              <span className="font-semibold">Economy mode: half the AI cost</span>
+              <span className="block muted">Uses the Batch API. Results arrive within about an hour (at most 24 h) instead of seconds. Good for a backlog.</span>
+            </span>
           </label>
           <button className="btn btn-primary w-full" onClick={upload} disabled={!!progress && progress.sent < progress.total}>
             Upload and process

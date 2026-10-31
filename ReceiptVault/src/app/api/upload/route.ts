@@ -32,6 +32,7 @@ export const POST = handler(async (req: Request) => {
     files,
     source,
     asPages: form.get("asPages") === "1",
+    economy: form.get("economy") === "1",
     batchId,
     actor: { type: "user", id: user.id, ip: await clientIp() },
   });

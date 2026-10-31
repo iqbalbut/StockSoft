@@ -23,8 +23,20 @@ Honest limits in Phase 1:
 - iPhone HEIC files uploaded *directly* (not via the camera screen) are rejected with a clear message; the Capture screen converts them to JPEG automatically.
 - The live extraction eval has not been run yet (no API key in the build environment).
 
-### Phase 2: classification rules, ledger, payables
-Rules editor (vendor → category/client/billable), ledger entries on approval, payables list with due-date reminders and "mark paid", billable expenses attached to clients, weekly email digest ("X processed, Y need review, Z claimable"), outbound webhooks for n8n (`document.approved`, `bill.due`), Message Batches API for big backlogs (~50% cheaper).
+### Phase 2 (this delivery): rules, ledger, payables, digest ✅
+- **Vendor rules editor** (Rules): category, business/personal, billable, client per vendor. Saving a rule fills that vendor's documents in review and auto-approves the ones it fully resolves. Corrections in review still teach rules automatically.
+- **Ledger** (Ledger): approved business documents post automatically; edits and rejections reverse and repost, never overwrite. Cash or accrual basis in Settings.
+- **Bills & invoices** (Bills): unpaid vendor bills sorted by due date (overdue in red), unpaid sales invoices, *Mark paid* with date/amount/reference, undo.
+- **Reminders**: daily at 09:00, by email and webhook, for bills due within N days or overdue.
+- **Clients & billable expenses** (Clients): receipts mentioning a client's name or code ("Acme Retail project", "PO BWA-114") are linked automatically; per-client list of expenses to re-invoice with *Mark as re-invoiced*.
+- **Weekly digest** (Mondays 09:00): "X documents processed, Y need review, Z claimable", plus bills due, by email and the `digest.weekly` webhook (WhatsApp via n8n).
+- **Outgoing webhooks** for n8n/Zapier, HMAC-signed, with retries.
+- **Economy mode** for backlogs: Message Batches API at 50% of the cost; failed or invalid batch results fall back to the real-time path.
+
+Phase 2 limits:
+- Changing the accounting basis applies to new postings only; it doesn't rewrite earlier entries.
+- Re-invoicing is a manual "mark as re-invoiced" until Phase 3 generates the invoice.
+- Reminders and the digest need SMTP for email; without it they go to webhooks only.
 
 ### Phase 3: bank matching, reports, exports, invoicing
 Bank/card statement upload (CSV/PDF) with auto-matching both ways, year-end tax package (PDF + Excel with linked receipt images), CSV/Excel/QuickBooks Online/Xero exports (and optional API sync), branded outgoing invoices with auto-numbering, PDF and email.
@@ -45,3 +57,14 @@ Deploy (docs/DEPLOYMENT.md) or run the demo, then on your phone:
 11. **Records:** open any record → *Download original* → file name follows `YYYY-MM-DD_Vendor_Amount_CUR`; audit trail lists ingested → extracted → your edits → approved.
 12. **Gmail (if connected):** label an emailed receipt *Receipts* → Settings → *Check Gmail now* → it appears within a minute and the email moves to *Receipts/Processed*.
 13. **Dark mode:** switch the phone to dark mode; the app follows.
+
+## Phase 2 test checklist (from your phone, ~15 minutes)
+1. **Bills:** photograph or forward a utility/internet bill with a due date. It appears in **Bills to pay** (red if overdue).
+2. **Mark paid:** tap *Mark paid* → keep today's date → add a reference → Save. It moves to *Recently paid*, and **Ledger** shows it dated today (cash basis).
+3. **Ledger reversal:** open an approved receipt → change the total → Ledger shows the old line struck through, a reversal, and the new line. Net effect equals the new total.
+4. **Clients:** Clients → add your real client with a short code. Write "for <CODE>" on a receipt, snap it → after approval it shows under that client's *To re-invoice*.
+5. **Rules:** Rules → pick a vendor in review → set its category. "Applied to N in review" appears; if that was the only doubt, the item leaves the review queue on its own.
+6. **Digest:** Settings → *Preview this week* (check the numbers match the dashboard) → *Send now* → email arrives (with SMTP set).
+7. **WhatsApp/n8n:** add an n8n webhook for `digest.weekly` → *Send test* → n8n receives it; *last:* shows `200`.
+8. **Reminders:** set a bill's due date to tomorrow (open it, tap Due date) → next morning at 09:00 you get the reminder (or check the n8n webhook).
+9. **Economy mode:** Upload → tick *Economy mode* → upload 10 PDFs → they stay "Reading…" and complete within about an hour; the record's model shows "(batch)".

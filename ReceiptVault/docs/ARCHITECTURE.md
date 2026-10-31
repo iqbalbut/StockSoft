@@ -74,9 +74,24 @@ erDiagram
 | `audit_log` | Append-only: who/what changed what, when, from where | `actor_type` user/system/ai, `action`, `changes` (field-level from→to), `ip` |
 | `jobs` | Work queue | type, payload, attempts, `run_at` (backoff), `last_error` |
 | `ingest_state` | Gmail/Drive poll bookkeeping | `last_run_at`, `cursor` |
-| `settings` | Routing thresholds, retention | JSON |
+| `settings` | Routing thresholds, retention, accounting basis, digest/reminder preferences | JSON |
+| `ledger_entries` | Approved business transactions, append-only | `entry_date`, `kind` expense/revenue, `category`, `amount` + `currency` (original), `amount_usd`, `fx_rate`, `client_id`, `reversal_of`, `reversed` |
+| `webhook_endpoints` | Outgoing webhooks (n8n/Zapier) | `url`, `secret` (encrypted), `events`, `last_status` |
+| `ai_batches` | Economy-mode submissions to the Message Batches API | `anthropic_id`, `document_ids`, `status` |
 
-Planned for Phase 2/3 (not created yet): `ledger_entries`, `payables` (payment status, reminders), `bank_statements` / `bank_transactions` / `matches`, `invoices` / `invoice_lines`, `webhook_subscriptions`.
+Payment tracking lives on `documents` (`paid_at`, `paid_amount`, `payment_ref`, `reminded_at`), as does re-billing (`rebilled_at`) and economy mode (`economy`, `ai_batch_id`).
+
+Planned for Phase 3: `bank_statements` / `bank_transactions` / `matches`, `invoices` / `invoice_lines`, `exports`.
+
+### Ledger rules
+
+- Only **approved business** receipts, vendor bills and sales invoices post. Personal, rejected, duplicate, bank statements and contracts don't.
+- Receipts post on their date. Bills and invoices post on the **paid date** (cash basis, default) or the **document date** (accrual), chosen in Settings.
+- Postings are never edited. Editing an approved document, rejecting it or re-reading it **reverses** the live entry (a negative mirror, original struck through) and posts the new one, so every past report can be reconstructed.
+
+### Events (outgoing webhooks)
+
+`document.processed`, `document.approved`, `document.needs_review`, `bill.due_soon`, `bill.paid`, `invoice.paid`, `digest.weekly`. Each delivery is a queued job (6 attempts with backoff) signed with HMAC-SHA256.
 
 ### Document lifecycle
 

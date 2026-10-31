@@ -2,7 +2,7 @@
 
 Snap, forward or drop a receipt. ReceiptVault reads it with Claude, categorises it for a US small business, converts it to USD at the historical rate, checks for duplicates, and either files it automatically or puts it in a one-thumb review queue. Originals are encrypted and kept for 7 years with a full audit trail.
 
-**Status: Phase 1 (capture, extraction, review queue) plus duplicates, FX and learning vendor rules.** See [docs/PLAN.md](docs/PLAN.md) for assumptions, the roadmap and the phone test checklist.
+**Status: Phases 1 and 2 done:** capture, extraction and review queue; duplicates, FX, vendor rules, ledger, bills/invoices with reminders, clients and billable expenses, weekly digest, outgoing webhooks, and a half-price economy mode for backlogs. See [docs/PLAN.md](docs/PLAN.md) for assumptions, the roadmap and the phone test checklist.
 
 | Doc | |
 |---|---|

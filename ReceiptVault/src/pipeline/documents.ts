@@ -8,6 +8,8 @@ import { defaultFxProvider, toUsd } from "./fx";
 import { archivedName, extForMime, normalizeVendor } from "./naming";
 import { enqueue } from "./jobs";
 import { retainUntil } from "./process";
+import { syncLedger } from "./ledger";
+import { emit } from "./events";
 
 const dateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable();
 const moneyStr = z
@@ -94,6 +96,7 @@ export async function updateDocument(id: string, patch: DocumentPatch, actor: Ac
     await db.update(schema.vendors).set(learn).where(eq(schema.vendors.id, vendorId));
     await audit(actor, "vendor", vendorId, "rule_learned", learn);
   }
+  if (before.status === "approved") await syncLedger(id, actor); // reverses and reposts if amounts changed
   return load(id);
 }
 
@@ -107,6 +110,8 @@ export async function approveDocument(id: string, actor: Actor & { id: string })
     .set({ status: "approved", approvedBy: actor.id, approvedAt: new Date(), autoApproved: false, duplicateOfId: doc.status === "duplicate" ? null : doc.duplicateOfId, updatedAt: new Date() })
     .where(eq(schema.documents.id, id));
   await audit(actor, "document", id, "approved", { previousStatus: doc.status });
+  await syncLedger(id, actor);
+  await emit("document.approved", { id, auto: false, vendor: doc.vendorName, total: doc.total, currency: doc.currency, totalUsd: doc.totalUsd });
   return load(id);
 }
 
@@ -115,12 +120,14 @@ export async function rejectDocument(id: string, actor: Actor & { id: string }, 
   const doc = await load(id);
   await db.update(schema.documents).set({ status: "rejected", updatedAt: new Date() }).where(eq(schema.documents.id, id));
   await audit(actor, "document", id, "rejected", { previousStatus: doc.status, reason: reason ?? null });
+  await syncLedger(id, actor); // reverses any posting
   return load(id);
 }
 
 export async function reprocessDocument(id: string, actor: Actor & { id: string }) {
   const db = await getDb();
-  await db.update(schema.documents).set({ status: "queued", error: null, updatedAt: new Date() }).where(eq(schema.documents.id, id));
+  await db.update(schema.documents).set({ status: "queued", error: null, economy: false, updatedAt: new Date() }).where(eq(schema.documents.id, id));
   await audit(actor, "document", id, "reprocess_requested");
+  await syncLedger(id, actor); // a re-read document leaves the ledger until it is approved again
   await enqueue("process_document", { documentId: id });
 }

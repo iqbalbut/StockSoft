@@ -6,6 +6,7 @@ import { REASON_LABELS, type ReviewReason } from "@/pipeline/route";
 import { DocumentFields } from "./DocumentFields";
 import { Preview } from "./ReviewQueue";
 import { money, STATUS_LABEL, STATUS_STYLE } from "./format";
+import { MarkPaid } from "./Phase2Client";
 
 type Detail = ClientDoc & {
   lineItems: { id: string; description: string; quantity: string | null; amount: string | null }[];
@@ -66,6 +67,17 @@ export function DocumentDetail({ initial, readOnly }: { initial: Detail; readOnl
           )}
           {error && <p className="mt-2 text-sm text-rose-500">{error}</p>}
         </div>
+        {(doc.docType === "vendor_bill" || doc.docType === "sales_invoice") && (
+          <div className="card flex flex-wrap items-center justify-between gap-2 p-4 text-sm">
+            <div>
+              <div className="font-semibold">{doc.docType === "vendor_bill" ? "Bill payment" : "Invoice payment"}</div>
+              <div className="muted">
+                {doc.paidAt ? `Paid ${money(doc.paidAmount ?? doc.total, doc.currency)} on ${doc.paidAt}${doc.paymentRef ? ` · ${doc.paymentRef}` : ""}` : `Unpaid${doc.dueDate ? ` · due ${doc.dueDate}` : ""}`}
+              </div>
+            </div>
+            {!readOnly && <MarkPaid id={doc.id} total={doc.total} currency={doc.currency} paid={!!doc.paidAt} />}
+          </div>
+        )}
         {doc.lineItems.length > 0 && (
           <div className="card p-4">
             <h2 className="font-semibold">Line items</h2>
