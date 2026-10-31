@@ -79,6 +79,17 @@ Each request has headers `x-receiptvault-event`, `x-receiptvault-delivery` (uniq
 
 WhatsApp digest: *Webhook* (event `digest.weekly`) → *WhatsApp Business Cloud: Send message* with `{{$json.data.text}}` as the body. Bill reminders work the same way with `bill.due_soon`.
 
+## QuickBooks Online and Xero
+
+Reports gives you the files, and the tax package contains them too.
+- **Xero bills / sales invoices:** Business → Bills to pay (or Invoices) → Import → upload the CSV. Account codes come from Settings → Company & invoicing → *Account codes* (Xero's default chart preset). Each line's tracking column carries the client for billable expenses.
+- **QuickBooks Online:** Banking → Upload transactions → the 3-column `qbo-bank-<CUR>.csv` (one per currency, since QBO bank accounts are single-currency). The category is in the description so a bank rule can file it. For sales, use Sales → Import invoices with `qbo-invoices.csv`.
+- **Direct API sync** is not built in. Use the `document.approved` webhook in n8n with n8n's QuickBooks or Xero node (create Purchase / Bill / Invoice) if you want records to appear there automatically. This avoids storing accounting-system OAuth tokens in ReceiptVault.
+
+## Accountant access
+
+Settings → *Accountant access* → add their email and a temporary password (share it privately). Accountants can see everything and download exports and the tax package; every write endpoint returns 403. *Revoke* ends their sessions immediately.
+
 ## Security checklist
 
 - HTTPS only (HSTS header is sent). Sessions are HTTP-only cookies; login and 2FA are rate-limited.

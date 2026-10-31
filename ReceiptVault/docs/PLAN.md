@@ -38,8 +38,25 @@ Phase 2 limits:
 - Re-invoicing is a manual "mark as re-invoiced" until Phase 3 generates the invoice.
 - Reminders and the digest need SMTP for email; without it they go to webhooks only.
 
-### Phase 3: bank matching, reports, exports, invoicing
-Bank/card statement upload (CSV/PDF) with auto-matching both ways, year-end tax package (PDF + Excel with linked receipt images), CSV/Excel/QuickBooks Online/Xero exports (and optional API sync), branded outgoing invoices with auto-numbering, PDF and email.
+### Phase 3 (this delivery): bank matching, reports, exports, invoicing ✅
+- **Bank & card statements** (Bank): import CSV (columns, date order and debit/credit layouts detected automatically) or PDF/photo (read by Claude). Overlapping imports don't duplicate. Matching is automatic and handles a USD card charged for a PKR/AED receipt. Ambiguous pairs are suggested for one-tap confirmation. Gaps are flagged both ways: charges without receipts, and receipts not on any statement. A matched bill or invoice is marked paid.
+- **Year-end tax package** (Reports): a ZIP with:
+  - a summary PDF: IRS Schedule C totals with meals at 50%, monthly totals, the full ledger, and every receipt as an appendix page;
+  - an Excel workbook whose receipt column links to the original files;
+  - a ledger CSV, the Xero/QuickBooks import files, and all original receipts with their standard names.
+- **Exports**: ledger CSV, Excel workbook, Xero bills and sales invoices, QuickBooks Online bank transactions (per currency) and invoices. Account codes are configurable. Direct API sync goes through n8n (see DEPLOYMENT).
+- **Invoices**:
+  - Branded PDF with automatic numbering (AIN-2026-001…).
+  - Lines entered by hand, or pulled in from a client's billable expenses with an optional markup.
+  - Issue, email with the PDF attached, void.
+  - Issued invoices flow into receivables, the ledger and the tax package.
+- **Accountant access**: read-only users who can download exports and the tax package.
+
+Phase 3 limits:
+- **Direct QuickBooks/Xero API sync isn't built in.** Use the exports, or an n8n flow on `document.approved`.
+- **PDF statements depend on Claude reading them.** CSV from the bank is exact, so prefer it; very long PDFs should be split by month.
+- **Invoice PDFs use standard PDF fonts.** Text outside Latin-1 (e.g. Urdu) is replaced with "?". Client and line text should be in English.
+- **The tax package uses Schedule C lines.** If AiNetworks files Form 1065 or 1120, your preparer maps the same categories to that form.
 
 ## Phase 1 test checklist (from your phone, ~15 minutes)
 Deploy (docs/DEPLOYMENT.md) or run the demo, then on your phone:
@@ -68,3 +85,14 @@ Deploy (docs/DEPLOYMENT.md) or run the demo, then on your phone:
 7. **WhatsApp/n8n:** add an n8n webhook for `digest.weekly` → *Send test* → n8n receives it; *last:* shows `200`.
 8. **Reminders:** set a bill's due date to tomorrow (open it, tap Due date) → next morning at 09:00 you get the reminder (or check the n8n webhook).
 9. **Economy mode:** Upload → tick *Economy mode* → upload 10 PDFs → they stay "Reading…" and complete within about an hour; the record's model shows "(batch)".
+
+## Phase 3 test checklist (from your phone, ~15 minutes)
+1. **Bank import:** on your bank's website, export last month as CSV → Bank → Import (pick the currency, add the last 4 digits) → it shows *N matched, M suggested*.
+2. **Confirm / ignore:** open the statement → tap *Confirm match* on a suggestion → tap *No receipt needed* on a bank fee.
+3. **Missing receipts:** Bank → *Charges without a receipt* lists the rest. Snap one of those receipts → tap *Re-run matching* → it matches.
+4. **Card abroad:** a Dubai/London receipt paid with your USD card matches the card charge even though the amounts differ by FX.
+5. **Invoice:** Clients → pick a client with billable expenses → *Create invoice from these* → *+ Billable expenses* (try 10% markup) → Save draft → *Preview PDF* (watermarked) → *Issue & email* to yourself. The number is AIN-YYYY-NNN and the email has the PDF attached.
+6. **Invoice paid:** when the client pays, import the statement (or Bills → Invoices to collect → Mark paid). The invoice shows *Paid* and revenue appears in the Ledger.
+7. **Tax package:** Reports → choose the year → download the ZIP → open `summary-YEAR.pdf` (totals, then one page per receipt) and `ledger-YEAR.xlsx` (receipt links open the files once the ZIP is extracted).
+8. **Exports:** download *Xero: bills* or *QuickBooks: transactions* and do a test import into a Xero/QBO sandbox or demo company.
+9. **Accountant:** Settings → Accountant access → add your CPA → sign in as them in a private window: they can download Reports but buttons that change data don't work.

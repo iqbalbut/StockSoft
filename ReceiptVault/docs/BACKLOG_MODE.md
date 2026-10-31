@@ -27,9 +27,16 @@ Typically 20–40% of an old backlog needs a look (blur, handwriting, foreign cu
 - **Duplicates**: the card links to the earlier copy. *Discard* if it's the same purchase, *Approve* if it's genuinely separate.
 - **Teach it once**: if you change a vendor's category (e.g. "Daraz" → Office expenses) or mark it personal, every future receipt from that vendor gets the same treatment automatically.
 
-## 4. Check the result (5 min)
+## 4. Find what's missing with your bank statements (10 min)
+- On your bank and card websites, export each statement for the backlog period as **CSV** (PDF works too; Claude reads it).
+- **Bank → Import a statement**, once per account. Receipts are matched automatically; bills found on the statement are marked paid.
+- **Charges without a receipt:** search your email for those, or snap them if you still have the paper. Bank fees, ATM withdrawals and transfers: tap *No receipt needed*.
+- **Receipts not on any statement:** usually a different card, or a wrong amount or date. Open the record and fix it.
+
+## 5. Check the result (5 min)
 - **Dashboard**: claimed vs. not-yet-claimed, spend by category and month.
 - **Records → Failed**: open any failures, tap **Re-read** (temporary API errors) or fix by hand.
+- **Reports → tax-package-YEAR.zip** is what you send your accountant (or add them as an accountant user so they can download it themselves).
 - Every record has its original (download button), a standard file name like `2025-03-14_LahoreGrillHouse_5508.40_PKR.jpg`, the USD amount at that day's rate, and a full audit trail.
 
 ## Tips

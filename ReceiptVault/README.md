@@ -2,11 +2,16 @@
 
 Snap, forward or drop a receipt. ReceiptVault reads it with Claude, categorises it for a US small business, converts it to USD at the historical rate, checks for duplicates, and either files it automatically or puts it in a one-thumb review queue. Originals are encrypted and kept for 7 years with a full audit trail.
 
-**Status: Phases 1 and 2 done:** capture, extraction and review queue; duplicates, FX, vendor rules, ledger, bills/invoices with reminders, clients and billable expenses, weekly digest, outgoing webhooks, and a half-price economy mode for backlogs. See [docs/PLAN.md](docs/PLAN.md) for assumptions, the roadmap and the phone test checklist.
+**Status: all three phases built.**
+1. Capture, AI extraction and the review queue.
+2. Rules, ledger, bills with reminders, clients, weekly digest, webhooks and economy mode.
+3. Bank/card statement matching, the year-end tax package, CSV/Excel/QuickBooks/Xero exports, branded invoices, and accountant access.
+
+See [docs/PLAN.md](docs/PLAN.md) for assumptions, known limits and the phone test checklists.
 
 | Doc | |
 |---|---|
-| [docs/PLAN.md](docs/PLAN.md) | Assumptions, phases, Phase 1 test checklist |
+| [docs/PLAN.md](docs/PLAN.md) | Assumptions, phases, limits, phone test checklists |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture diagram, data model, stack choices |
 | [docs/EXTRACTION.md](docs/EXTRACTION.md) | Prompt, JSON schema, routing rule, the 10 test cases |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | VPS + Docker, Railway, Vercel; Gmail/Drive; webhooks; security |
@@ -46,12 +51,16 @@ src/
   app/            pages (dashboard, capture, upload, review, records, settings) and API routes
   components/     UI (review queue, capture with offline queue, bulk upload, field editor)
   extraction/     prompt, JSON schema, Claude call, preprocessing, sanitising, test cases, demo mock
-  pipeline/       ingest, process, routing rules, duplicates, FX, naming, job queue, queries
+  pipeline/       ingest, process, routing rules, duplicates, FX, naming, job queue, ledger, payables, rules, digest, webhooks, economy batches
+  bank/           statement CSV parser, PDF statement reading, matching engine
+  reports/        year data, PDF writer, exports (CSV/Excel/Xero/QuickBooks), tax package
+  invoices/       outgoing invoices: drafts, numbering, PDF, email, void
   ingest/         Gmail and Drive pollers
   worker/         queue worker
   db/             Drizzle schema + client (Postgres or embedded PGlite)
   lib/            env, auth, crypto (AES-GCM, scrypt, TOTP), storage, audit, settings
 drizzle/          SQL migrations
 fixtures/images/  the 10 test-case images
+fixtures/statements/ demo bank/card CSV statements
 tests/            vitest suites
 ```

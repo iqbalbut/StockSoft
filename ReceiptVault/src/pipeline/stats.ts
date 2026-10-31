@@ -54,5 +54,10 @@ export async function dashboardStats(year = new Date().getFullYear()) {
   ) as Record<string, number>;
 
   const recent = await db.query.documents.findMany({ orderBy: desc(d.createdAt), limit: 8 });
-  return { year, claimed, unclaimed, revenue: revenue.usd, byCategory, byMonth, byClient, payables, counts, recent };
+  const t = schema.bankTransactions;
+  const [missing] = await db
+    .select({ n: sql<number>`count(*)::int`, total: sql<number>`coalesce(sum(-${t.amount}),0)::float` })
+    .from(t)
+    .where(and(inArray(t.matchStatus, ["unmatched", "suggested"]), sql`${t.amount} < 0`));
+  return { year, claimed, unclaimed, revenue: revenue.usd, byCategory, byMonth, byClient, payables, counts, recent, missingReceipts: missing.n };
 }

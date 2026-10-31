@@ -11,7 +11,7 @@ export function setMailTransport(t: Transporter | null) {
 export const mailConfigured = () => Boolean(transport || env().SMTP_URL);
 
 /** Sends an email; returns false (and does nothing) when SMTP isn't configured. */
-export async function sendMail(msg: { to: string; subject: string; text: string; html?: string }) {
+export async function sendMail(msg: { to: string; subject: string; text: string; html?: string; replyTo?: string; attachments?: { filename: string; content: Buffer; contentType?: string }[] }) {
   if (!transport) {
     if (!env().SMTP_URL) return false;
     transport = nodemailer.createTransport(env().SMTP_URL);

@@ -5,6 +5,8 @@
 - **Call:** [`src/extraction/extract.ts`](../src/extraction/extract.ts). Uses model `claude-opus-5-5` with adaptive thinking and `effort: medium`, all configurable. Server-side fallback (`fallbacks: "default"`) is on, so a safety-classifier decline is retried on Anthropic's recommended fallback model instead of failing. If the output is cut off or fails validation, the error is sent back to the model and it is asked again (up to `EXTRACTION_MAX_ATTEMPTS`). A refusal is permanent and the document is marked failed for a human to handle.
 - **Sanitising:** [`src/extraction/sanitize.ts`](../src/extraction/sanitize.ts) masks any Luhn-valid card number or IBAN that reaches free-text fields, as a second guard behind the prompt rule.
 
+Bank and card statements that arrive as PDF or photo are read by a separate prompt and schema in [`src/bank/statement-extract.ts`](../src/bank/statement-extract.ts). It returns every transaction with money out as a negative amount, keeps only the account's last 4 digits, and reports `complete: false` with a note if any part was unreadable. CSV statements don't use the model at all.
+
 ## Output fields
 
 `document_type` (expense_receipt, vendor_bill, sales_invoice, bank_statement, contract, other), `issued_by_us`, `language`, `image_quality`, `vendor_name`, `vendor_tax_id`, `document_number`, `document_date`, `due_date`, `currency`, `subtotal`, `tax`, `tip`, `total`, `payment_method`, `card_last4`, `line_items[]`, `client_reference`, `category` (IRS Schedule C-mapped, see `CATEGORIES`), `is_business`, `is_billable`, `confidence{…per field…}`, `notes`.

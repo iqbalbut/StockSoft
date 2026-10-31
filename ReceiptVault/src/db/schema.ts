@@ -96,7 +96,7 @@ export const documents = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     status: text("status", { enum: DOCUMENT_STATUSES }).notNull().default("queued"),
     source: text("source", {
-      enum: ["camera", "upload", "zip", "gmail", "drive", "webhook", "whatsapp", "seed"],
+      enum: ["camera", "upload", "zip", "gmail", "drive", "webhook", "whatsapp", "seed", "invoice"],
     }).notNull(),
     sourceRef: text("source_ref"), // e.g. Gmail message id / Drive file id (idempotent ingestion)
     batchId: uuid("batch_id").references(() => batches.id),
@@ -306,4 +306,95 @@ export const aiBatches = pgTable("ai_batches", {
   error: text("error"),
   createdAt: ts("created_at").notNull().defaultNow(),
   endedAt: ts("ended_at"),
+});
+
+/** An imported bank or card statement (CSV, or PDF read by Claude). The original file is kept encrypted. */
+export const statements = pgTable("statements", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  accountLabel: text("account_label"),
+  accountLast4: text("account_last4"),
+  currency: text("currency").notNull(),
+  periodStart: date("period_start"),
+  periodEnd: date("period_end"),
+  sourceFormat: text("source_format", { enum: ["csv", "pdf"] }).notNull(),
+  storageKey: text("storage_key"),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const MATCH_STATUSES = ["unmatched", "suggested", "matched", "ignored"] as const;
+
+export const bankTransactions = pgTable(
+  "bank_transactions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    statementId: uuid("statement_id")
+      .notNull()
+      .references(() => statements.id),
+    txnDate: date("txn_date").notNull(),
+    description: text("description").notNull(),
+    amount: money("amount").notNull(), // negative = money out (debit), positive = money in
+    currency: text("currency").notNull(),
+    // Same account + date + amount + description = same transaction (re-imported overlapping statements).
+    fingerprint: text("fingerprint").notNull(),
+    matchStatus: text("match_status", { enum: MATCH_STATUSES }).notNull().default("unmatched"),
+    documentId: uuid("document_id").references(() => documents.id),
+    matchScore: real("match_score"),
+    matchedBy: text("matched_by"), // "auto" or a user id
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("bank_txn_fingerprint_idx").on(t.fingerprint),
+    index("bank_txn_doc_idx").on(t.documentId),
+    index("bank_txn_date_idx").on(t.txnDate),
+  ],
+);
+
+/** Outgoing invoices issued by the company. Issuing one creates its sales-invoice document (receivables, ledger). */
+export const invoices = pgTable(
+  "invoices",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    number: text("number"), // assigned on issue: PREFIX-YYYY-NNN
+    clientId: uuid("client_id")
+      .notNull()
+      .references(() => clients.id),
+    status: text("status", { enum: ["draft", "issued", "void"] }).notNull().default("draft"),
+    issueDate: date("issue_date").notNull(),
+    dueDate: date("due_date").notNull(),
+    currency: text("currency").notNull(),
+    taxRate: numeric("tax_rate", { precision: 6, scale: 3 }).notNull().default("0"),
+    subtotal: money("subtotal").notNull().default("0"),
+    tax: money("tax").notNull().default("0"),
+    total: money("total").notNull().default("0"),
+    notes: text("notes"),
+    documentId: uuid("document_id").references(() => documents.id),
+    sentAt: ts("sent_at"),
+    sentTo: text("sent_to"),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+    updatedAt: ts("updated_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("invoices_number_idx").on(t.number)],
+);
+
+export const invoiceLines = pgTable("invoice_lines", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  invoiceId: uuid("invoice_id")
+    .notNull()
+    .references(() => invoices.id),
+  position: integer("position").notNull(),
+  description: text("description").notNull(),
+  quantity: numeric("quantity", { precision: 18, scale: 4 }).notNull().default("1"),
+  unitPrice: money("unit_price").notNull(),
+  amount: money("amount").notNull(),
+  // Re-billed expense this line came from (marked rebilled when the invoice is issued).
+  sourceDocumentId: uuid("source_document_id").references(() => documents.id),
+});
+
+/** Atomic counters (invoice numbering per year). */
+export const counters = pgTable("counters", {
+  key: text("key").primaryKey(),
+  value: integer("value").notNull(),
 });

@@ -35,7 +35,7 @@ export default async function Dashboard() {
       </div>
 
       <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 text-sm md:hidden">
-        {[["/payables", "Bills"], ["/clients", "Clients"], ["/rules", "Rules"], ["/ledger", "Ledger"], ["/documents", "Records"]].map(([href, label]) => (
+        {[["/payables", "Bills"], ["/invoices", "Invoices"], ["/bank", "Bank"], ["/reports", "Reports"], ["/clients", "Clients"], ["/rules", "Rules"], ["/ledger", "Ledger"]].map(([href, label]) => (
           <Link key={href} href={href} className="card shrink-0 px-4 py-2 font-medium">{label}</Link>
         ))}
       </nav>
@@ -47,6 +47,16 @@ export default async function Dashboard() {
             <div className="text-sm muted">Swipe through them in about {Math.max(1, Math.round(review * 0.15))} min</div>
           </div>
           <span className="btn btn-primary">Review</span>
+        </Link>
+      )}
+
+      {s.missingReceipts > 0 && (
+        <Link href="/bank" className="card flex items-center justify-between p-4">
+          <div>
+            <div className="font-semibold">{s.missingReceipts} bank/card charge{s.missingReceipts === 1 ? "" : "s"} without a receipt</div>
+            <div className="text-sm muted">Snap the receipt, or mark it as not needed</div>
+          </div>
+          <span className="btn btn-ghost">Bank</span>
         </Link>
       )}
 

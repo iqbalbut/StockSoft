@@ -6,6 +6,7 @@ import { googleConfigured } from "@/ingest/google";
 import { dbKind } from "@/db";
 import { SettingsForm, TwoFactor, SignOut, PollNow, NotificationSettings } from "@/components/SettingsClient";
 import { Webhooks, DigestPanel } from "@/components/Phase2Client";
+import { InvoiceSettings, AccountantAccess } from "@/components/Phase3Client";
 import { mailConfigured } from "@/lib/mailer";
 import { getDb, schema } from "@/db";
 import { desc } from "drizzle-orm";
@@ -43,6 +44,16 @@ export default async function SettingsPage() {
           {!mailConfigured() && <p className="mt-2 text-xs text-amber-600">Email isn't configured (SMTP_URL), so the digest goes only to webhooks. Add a webhook below to get it on WhatsApp via n8n.</p>}
         </div>
       </section>
+      <section className="card p-4">
+        <h2 className="mb-2 font-semibold">Company & invoicing</h2>
+        <InvoiceSettings initial={settings} readOnly={user.role !== "owner"} />
+      </section>
+      {user.role === "owner" && (
+        <section className="card p-4">
+          <h2 className="mb-2 font-semibold">Accountant access</h2>
+          <AccountantAccess />
+        </section>
+      )}
       {user.role === "owner" && (
         <section className="card p-4">
           <h2 className="font-semibold">Outgoing webhooks (n8n, Zapier)</h2>

@@ -12,6 +12,9 @@ const ITEMS = [
 
 export const MORE = [
   { href: "/payables", label: "Bills", icon: "" },
+  { href: "/invoices", label: "Invoices", icon: "" },
+  { href: "/bank", label: "Bank", icon: "" },
+  { href: "/reports", label: "Reports", icon: "" },
   { href: "/clients", label: "Clients", icon: "" },
   { href: "/rules", label: "Rules", icon: "" },
   { href: "/ledger", label: "Ledger", icon: "" },

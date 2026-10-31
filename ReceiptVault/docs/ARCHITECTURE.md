@@ -81,7 +81,23 @@ erDiagram
 
 Payment tracking lives on `documents` (`paid_at`, `paid_amount`, `payment_ref`, `reminded_at`), as does re-billing (`rebilled_at`) and economy mode (`economy`, `ai_batch_id`).
 
-Planned for Phase 3: `bank_statements` / `bank_transactions` / `matches`, `invoices` / `invoice_lines`, `exports`.
+| `statements` | Imported bank/card statements (CSV, or PDF/photo read by Claude); original kept encrypted | `currency`, `account_last4`, `period_start/end`, `source_format` |
+| `bank_transactions` | One row per statement line | `txn_date`, `amount` (negative = out), `fingerprint` (unique: overlapping imports don't duplicate), `match_status`, `document_id`, `match_score` |
+| `invoices`, `invoice_lines` | Outgoing invoices; lines can point at the re-billed expense | `number` (unique, PREFIX-YYYY-NNN), `status` draft/issued/void, `document_id` (its sales-invoice record) |
+| `counters` | Atomic, gap-free invoice numbering per prefix and year | `key`, `value` |
+
+### Bank matching
+
+Each pair of open transaction and candidate document gets a score = 0.5 × amount + 0.25 × date + 0.25 × name.
+- **Amount:** exact in the same currency = 1. Within 3% = 0.7. A meal charged up to 20% more = 0.45 (tip added on the card slip). A foreign-currency receipt on a USD card is compared with its USD conversion: within 3% = 0.8, within 6% = 0.55 (bank FX markup).
+- **Date:** receipts allow −2 to +10 days (cards post late). Bills and invoices allow anything from the issue date to 3 weeks past due.
+- **Name:** the share of the vendor's name words found in the bank narration.
+
+Pairs are assigned greedily from the best score, so each transaction and each document is used once. **Auto-match** needs a score of at least 0.85 and a lead of 0.1 or more over the runner-up for both sides; anything from 0.55 is only **suggested** (one tap to confirm). Matching a bill or sales invoice marks it paid on the transaction date, which posts it to the ledger on the cash basis. Gaps are flagged in both directions: charges with no receipt, and card/bank-paid receipts inside an imported period that no transaction accounts for.
+
+### Invoices
+
+Draft → **Issue** assigns the next number, freezes the PDF as an encrypted original, and creates an approved `sales_invoice` document. That puts it in receivables, the ledger (on payment under cash basis) and the tax package. It also marks the re-billed expenses as invoiced. **Void** rejects that document (reversing the ledger) and frees the expenses. Numbers are never reused.
 
 ### Ledger rules
 

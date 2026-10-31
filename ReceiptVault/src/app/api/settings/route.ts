@@ -25,6 +25,12 @@ const Patch = z
       }
     }, "Unknown time zone"),
     reminderDaysBefore: z.number().int().min(0).max(30),
+    companyAddress: z.string().max(500),
+    companyEmail: z.union([z.email(), z.literal("")]),
+    paymentInstructions: z.string().max(1500),
+    invoicePrefix: z.string().regex(/^[A-Z0-9]{1,8}$/, "1–8 capital letters/digits"),
+    invoiceDueDays: z.number().int().min(0).max(180),
+    accountCodes: z.record(z.string(), z.string().max(20)),
   })
   .partial()
   .strict();

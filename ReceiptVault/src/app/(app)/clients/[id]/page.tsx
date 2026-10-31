@@ -37,8 +37,13 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
             </li>
           ))}
         </ul>
-        {user.role === "owner" && <div className="mt-3"><RebillSelected clientId={id} ids={open.map((d) => d.id)} /></div>}
-        <p className="mt-2 text-xs muted">Phase 3 turns these into a branded invoice automatically; for now, mark them once you've billed the client.</p>
+        {user.role === "owner" && open.length > 0 && (
+          <div className="mt-3 space-y-2">
+            <Link href={`/invoices/new?clientId=${id}`} className="btn btn-primary w-full">Create invoice from these</Link>
+            <RebillSelected clientId={id} ids={open.map((d) => d.id)} />
+          </div>
+        )}
+        <p className="mt-2 text-xs muted">In the new invoice, tap “+ Billable expenses” (optionally with a markup). Issuing it marks these as re-invoiced. If you billed them outside ReceiptVault, use “Mark as re-invoiced”.</p>
       </div>
       {done.length > 0 && (
         <details className="card px-4 py-3 text-sm">
